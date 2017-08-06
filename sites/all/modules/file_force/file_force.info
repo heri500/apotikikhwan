@@ -1,0 +1,11 @@
+name = File Force
+description = "Force your visitors to download requested files."
+core = 6.x
+package = Other
+
+; Information added by drupal.org packaging script on 2013-04-03
+version = "6.x-2.6"
+core = "6.x"
+project = "file_force"
+datestamp = "1364979316"
+

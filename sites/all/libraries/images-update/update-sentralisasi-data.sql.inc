@@ -1,0 +1,2 @@
+ALTER TABLE `penjualan` ADD `uploaded` TINYINT NOT NULL DEFAULT '0' AFTER `insert_date`, ADD `changed` TINYINT NOT NULL DEFAULT '0' AFTER `uploaded`;
+ALTER TABLE `product` ADD `uploaded` TINYINT NOT NULL DEFAULT '0' AFTER `status_product`, ADD `changed` TINYINT NOT NULL DEFAULT '0' AFTER `uploaded`;

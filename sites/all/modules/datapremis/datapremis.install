@@ -1,0 +1,19 @@
+<?php
+
+function datapremis_install() {
+    $success = drupal_install_schema('datapremis');
+    if ($success) {
+        drupal_set_message(st('Module data premis berhasil diinstall.'));
+    }
+    else {
+        drupal_set_message(st('Module data premis gagal diinstall.'), 'error');
+    }
+}
+
+function datapremis_schema(){
+    require 'datapremis.schema.inc';
+    return $schema;
+}
+function datapremis_uninstall() {
+    drupal_uninstall_schema('datapremis');
+}
