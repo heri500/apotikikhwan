@@ -22,7 +22,7 @@ function tampilkantabelproduk(){
         'serverSide': true,
         'ajax': Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=produk&statusstok='+ statusstok +'&status_product='+ statusproduct,
         'aoColumns': [
-            { 'bSortable': false },null,null,{ 'bVisible': false },null,null,null,null,
+            { 'bSortable': false },null,null,null,null,null,null,null,
             null,{ 'bVisible': false },{ 'bVisible': false },
             { 'bVisible': false },null,null,null,{ 'bVisible': false },null,{ 'bSortable': false },{ 'bSortable': false }
         ],
@@ -64,7 +64,20 @@ function tampilkantabelproduk(){
                 'indicator': 'Menyimpan...',
                 'tooltip': 'Klik untuk mengubah...'
             });
+            var alamatsupplier = Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=supplier&idproduk='+ row.id;
             $('td', row).eq(3).addClass('center').editable(alamatupdate, {
+                'submitdata': function ( value, settings ) {
+                    return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 11 };
+                },
+                'loadurl' : alamatsupplier,
+                'width': '140px',
+                'height': '20px',
+                'submit': 'Ok',
+                'type': 'select',
+                'indicator': 'Menyimpan...',
+                'tooltip': 'Klik untuk mengubah...'
+            });
+            $('td', row).eq(4).addClass('center').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
                     return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 3 };
                 },
@@ -75,7 +88,7 @@ function tampilkantabelproduk(){
                 'indicator': 'Menyimpan...',
                 'tooltip': 'Klik untuk mengubah...'
             });
-            $('td', row).eq(4).addClass('center').editable(alamatupdate, {
+            $('td', row).eq(5).addClass('center').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
                     return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 4 };
                 },
@@ -86,7 +99,7 @@ function tampilkantabelproduk(){
                 'indicator': 'Menyimpan...',
                 'tooltip': 'Klik untuk mengubah...'
             });
-            $('td', row).eq(5).addClass('left').editable(alamatupdate, {
+            $('td', row).eq(6).addClass('left').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
                     return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 5 };
                 },
@@ -97,7 +110,7 @@ function tampilkantabelproduk(){
                 'indicator': 'Menyimpan...',
                 'tooltip': 'Klik untuk mengubah...'
             });
-            $('td', row).eq(6).addClass('angka').editable(alamatupdate, {
+            $('td', row).eq(7).addClass('angka').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
                     return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 6 };
                 },
@@ -113,7 +126,7 @@ function tampilkantabelproduk(){
                 'indicator': 'Menyimpan...',
                 'tooltip': 'Klik untuk mengubah...'
             });
-            $('td', row).eq(7).addClass('angka').editable(alamatupdate, {
+            $('td', row).eq(8).addClass('angka').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
                     return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 7 };
                 },
@@ -129,7 +142,7 @@ function tampilkantabelproduk(){
                 'indicator': 'Menyimpan...',
                 'tooltip': 'Klik untuk mengubah...'
             });
-            $('td', row).eq(8).addClass('angka').editable(alamatupdate, {
+            $('td', row).eq(9).addClass('angka').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
                     return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 8 };
                 },
@@ -145,9 +158,9 @@ function tampilkantabelproduk(){
                 'indicator': 'Menyimpan...',
                 'tooltip': 'Klik untuk mengubah...'
             });
-            $('td', row).eq(9).addClass('center');
+            $('td', row).eq(10).addClass('center');
             var alamatSatuan = Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=satuan&idproduk='+ row.id;
-            $('td', row).eq(10).addClass('center').editable(alamatupdate, {
+            $('td', row).eq(11).addClass('center').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
                     return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 10 };
                 },
@@ -162,9 +175,9 @@ function tampilkantabelproduk(){
                     oTable.draw(false);
                 }
             });
-            $('td', row).eq(11).addClass('angka');
-            $('td', row).eq(12).addClass('center');
+            $('td', row).eq(12).addClass('angka');
             $('td', row).eq(13).addClass('center');
+            $('td', row).eq(14).addClass('center');
         },
         'drawCallback': function( settings ) {
             $('.barcode-select').click(function(){

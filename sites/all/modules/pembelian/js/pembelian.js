@@ -15,7 +15,7 @@ function tampilkantabelkasir(){
 		'bInfo': false,
 		'sScrollY': '399px',
 		'aoColumns': [
-		{ 'bSortable': false },{ 'bSortable': false },null,null,null,null,null
+		{ 'bSortable': false },{ 'bSortable': false },null,null,null,null,null,null
 		],
 		'bAutoWidth': false
 	});
@@ -57,7 +57,7 @@ function tambahproduk(){
 			pecahdata = data.split(';');
 			if (pecahdata[0].trim() != 'error'){
 				subtotal = number_format(parseInt(pecahdata[2]),0,',','.');
-				nilaikirim = pecahdata[0].trim() +'___1___'+ pecahdata[2];
+				nilaikirim = pecahdata[0].trim() +'___1___'+ pecahdata[2] + '___' + Drupal.settings.tglsekarang;
 				index_cek_box = pecahdata[0].trim();
 				namacekbox = 'cekbox_'+ index_cek_box;
 				if($('#'+ namacekbox).val()){
@@ -71,7 +71,7 @@ function tambahproduk(){
 					var nTr = $('#'+ namacekbox).parent().parent().get(0);
 					var posisibaris = oTable.fnGetPosition(nTr);
 					oTable.fnUpdate(qtybaru, posisibaris, 4 );
-					nilaikirim = pecahnilai[0].trim() +'___'+ qtybaru +'___'+ pecahnilai[2];
+					nilaikirim = pecahnilai[0].trim() +'___'+ qtybaru +'___'+ pecahnilai[2] + '___'+ pecahnilai[3];
 					checkboxnilai = '<input checked="checked" style="display: none;" id="'+ namacekbox +'" name="'+ namacekbox +'" type="checkbox" value="'+ nilaikirim +'" />';
 					oTable.fnUpdate(number_format(subtotal,0,',','.') +' '+ checkboxnilai, posisibaris, 5 );
 					posisiakhir = totalproduk-1;
@@ -81,17 +81,29 @@ function tambahproduk(){
 				}else{
 					var icondelete = '<img onclick="hapus_produk(\''+ index_cek_box +'\',this.parentNode.parentNode,\''+ pecahdata[0] +'\')" title="Klik untuk menghapus" src="'+ pathutama +'misc/media/images/close.ico" width="24">';
 					var iconubah = '<img onclick="ubah_qty_produk(\''+ index_cek_box +'\',this.parentNode.parentNode,\''+ pecahdata[0] +'\')" title="Klik untuk mengubah qty produk ini" src="'+ pathutama +'misc/media/images/edit.ico" width="24">';
-
 					$('#lastharga').val(pecahdata[2]);
-					$('#last_id').val(pecahdata[0]);
+					$('#last_id').val(pecahdata[0].trim());
 					$('#lastqty').val('1');
 					checkboxnilai = '<input checked="checked" style="display: none;" id="'+ namacekbox +'" name="'+ namacekbox +'" type="checkbox" value="'+ nilaikirim +'" />';
-					var row = '<tr id="'+ index_cek_box +'"><td>'+ icondelete +'</td><td>'+ iconubah +'</td><td>'+ pecahdata[1] +'</td><td class="angka">'+ subtotal +'</td><td class="angka">1</td><td class="angka">'+ subtotal +' '+ checkboxnilai +'</td><td class="angka">'+ pecahdata[3] +'</td></tr>';
+					var row = '<tr id="'+ index_cek_box +'"><td>'+ icondelete +'</td><td>'+ iconubah +'</td><td>'+ pecahdata[1] +'</td><td class="angka">'+ subtotal +'</td><td class="angka">1</td><td class="angka">'+ subtotal +' '+ checkboxnilai +'</td><td class="angka">'+ pecahdata[3] +'</td><td class="center date-col"><input type="text" id="expire_'+ pecahdata[0].trim() +'" name="expire_'+ pecahdata[0].trim() +'" value="'+ Drupal.settings.tglsekarang +'"></td></tr>';
 					$('#tabel_kasir').dataTable().fnAddTr($(row)[0]);
 					giCount++;
 					totalproduk++;
 					totalbelanja = totalbelanja + parseInt(pecahdata[2]);
 					$('#totalbelanja').html('Total Belanja : Rp. '+ number_format(totalbelanja,0,',','.'));
+                    $('#expire_'+ pecahdata[0].trim()).datepicker({
+                        changeMonth: true,
+                        changeYear: true,
+                        dateFormat: 'yy-mm-dd',
+                        onClose: function(dateText, inst) {
+                            $('#barcode').select();
+                        },
+                        onSelect: function(dateText) {
+                        	var splitNilaiKirim = $('#'+ namacekbox).val().split('___');
+                        	var nilaiBaru = splitNilaiKirim[0].trim() +'___'+ splitNilaiKirim[1] +'___'+ splitNilaiKirim[2] +'___'+ dateText;
+                            $('#'+ namacekbox).val(nilaiBaru);
+                        }
+                    });
 				}
 				$('.dataTables_scrollBody').scrollTop($('.dataTables_scrollBody')[0].scrollHeight);
 				$('#barcode').autocomplete('close');
@@ -380,7 +392,7 @@ $(document).ready(function(){
 			nilaisubtotal = $('#lastharga').val()*nilaiubah;
 			subtotalbaru = number_format(nilaisubtotal,0,',','.');
 			var namacekbox = 'cekbox_'+ $('#last_id').val();
-			var nilaikirim = $('#last_id').val() +'___'+ nilaiubah +'___'+ $('#lastharga').val();
+			var nilaikirim = $('#last_id').val() +'___'+ nilaiubah +'___'+ $('#lastharga').val() + '___' + $('#expire_'+ $('#last_id').val()).val();
 			var checkboxnilai = '<input checked="checked" style="display: none;" id="'+ namacekbox +'" name="'+ namacekbox +'" type="checkbox" value="'+ nilaikirim +'" />';
 			oTable.fnUpdate(subtotalbaru +' '+ checkboxnilai, baris_int, 5 );
 			$('#lastqty').val(nilaiubah);
@@ -398,7 +410,7 @@ $(document).ready(function(){
 			nilaisubtotal = $('#lastqty').val()*nilaiubah;
 			subtotalbaru = number_format(nilaisubtotal,0,',','.');
 			var namacekbox = 'cekbox_'+ $('#last_id').val();
-			var nilaikirim = $('#last_id').val() +'___'+ $('#lastqty').val() +'___'+ nilaiubah;
+			var nilaikirim = $('#last_id').val() +'___'+ $('#lastqty').val() +'___'+ nilaiubah + '___' + $('#expire_'+ $('#last_id').val()).val();;
 			var checkboxnilai = '<input checked="checked" style="display: none;" id="'+ namacekbox +'" name="'+ namacekbox +'" type="checkbox" value="'+ nilaikirim +'" />';
 			oTable.fnUpdate(subtotalbaru +' '+ checkboxnilai, baris_int, 5 );
 			$('#lastharga').val(nilaiubah);
@@ -419,7 +431,7 @@ $(document).ready(function(){
 			nilaisubtotal = pecahnilai[2]*nilaiubah;
 			subtotalbaru = number_format(nilaisubtotal,0,',','.');
 			var namacekbox = 'cekbox_'+ idproduknya;
-			var nilaikirim = idproduknya +'___'+ nilaiubah +'___'+ pecahnilai[2];
+			var nilaikirim = idproduknya +'___'+ nilaiubah +'___'+ pecahnilai[2] + '___' + $('#expire_'+ $('#last_id').val()).val();;
 			var checkboxnilai = '<input checked="checked" style="display: none;" id="'+ namacekbox +'" name="'+ namacekbox +'" type="checkbox" value="'+ nilaikirim +'" />';
 			oTable.fnUpdate(subtotalbaru +' '+ checkboxnilai, baris_int, 5 );
 			totalbelanja = totalbelanja + (pecahnilai[2]*nilaiubah);

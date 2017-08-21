@@ -434,7 +434,7 @@ function get_data_product(){
 }
 
 function generate_barcode_product(){
-	$strSQL = "SELECT idproduct FROM product WHERE barcode=''";
+	$strSQL = "SELECT idproduct FROM product WHERE barcode='' OR barcode IS NULL";
 	$result = db_query($strSQL);
 	$dataProduct = array();
 	while ($data = db_fetch_object($result)){

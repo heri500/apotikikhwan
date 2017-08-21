@@ -746,7 +746,10 @@ function update_data_produk(){
 			('%d', '%f', '%f', '%f', '%s')",$productId,$stokSebelum,$masuk,$stokBaru,$keterangan);
 		}
 		$nilaiRet = $nilai;
-	}
+	}else if ($kolom == "11") {
+        $sql_update = "UPDATE product SET idsupplier='%d' WHERE idproduct='%d'";
+        $nilaiRet = db_result(db_query('SELECT namasupplier FROM supplier WHERE idsupplier=%d',$nilai));
+    }
 	db_query($sql_update,$nilai,$productId);
 	echo $nilaiRet;
 	exit();	

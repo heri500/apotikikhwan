@@ -62,7 +62,8 @@ function pembelian(){
 	$pembelian .= '</div>';
 	$pembelian .= '<div id="barcode_place">SCAN ATAU INPUT BARCODE, KODE ATAU NAMA PRODUK : <input type="text" id="barcode" name="barcode" class="barcodekasir"></div>';
 	$pembelian .= '<div id="tempattabelkasir">'.view_kasir_pembelian().'</div>';
-	$pembelian .= '<input type="hidden" id="last_id" name="last_id"><input type="hidden" id="lastqty" name="lastqty" value="1"><input type="hidden" id="lastharga" name="lastharga">';
+	$pembelian .= '<input type="hidden" id="last_id" name="last_id"><input type="hidden" id="lastqty" name="lastqty" value="1">';
+    $pembelian .= '<input type="hidden" id="lastharga" name="lastharga">';
 	$pembelian .= '<input type="hidden" id="nilaikirim" name="nilaikirim">';
 	$pembelian .= '<div id="tempattombolkasir" style="height: 340px;">';
 	$pembelian .= $panduantombol;
@@ -150,28 +151,33 @@ function simpan_pembelian(){
 		$totalmodal = 0;
 		foreach ($pecahdetail as $parameter){
 			$pecahparameter = explode("=",$parameter);
-			$pecahnilai = explode("___",remove_utf8_bom($pecahparameter[1]));
-			$IDPRODUK =	$pecahnilai[0];
-			$QTY = $pecahnilai[1];
-			$HARGABELI = $pecahnilai[2];
-			$result = db_query("SELECT hargapokok,stok FROM product WHERE idproduct='%d'",$IDPRODUK);	
-			$data = db_fetch_object($result);
-			$HARGAPOKOK = $data->hargapokok;
-			$STOKSEBELUM = $data->stok;
-			//idpembelian, idproduct, jumlah, hargapokok, hargapokok
-			db_query("INSERT INTO detailpembelian(idpembelian, idproduct, jumlah, hargapokok, hargapokoksebelumnya) VALUES
-			('%d', '%d', '%f', '%f','%f')",
-			$next_id,$IDPRODUK,$QTY,$HARGABELI,$HARGAPOKOK);
-			if ($HARGAPOKOK <> $HARGABELI){
-				db_query("INSERT INTO historyhargabeli (hargasebelum, hargasesudah, uid) VALUES('%f','%f','%d')",
-				$HARGAPOKOK,$HARGABELI,$user->uid);
-				db_query("UPDATE product SET hargapokok='%f' WHERE idproduct='%d'",$HARGABELI,$IDPRODUK);
-			}
-			$STOKSEKARANG = $STOKSEBELUM + $QTY;
-			db_query("UPDATE product SET stok='%f' WHERE idproduct='%d'",$STOKSEKARANG,$IDPRODUK);
-			$KETERANGAN = 'Pembelian';
-			db_query("INSERT INTO transaksistock (idproduk, idpembelian, stocksebelum, masuk, stocksetelah, keterangan) VALUES 
-			('%d', '%d', '%f', '%f', '%f', '%s')",$IDPRODUK,$next_id,$STOKSEBELUM,$QTY,$STOKSEKARANG,$KETERANGAN);
+			$splitParam1 = explode('_', $pecahparameter[0]);
+			if ($splitParam1[0] == 'cekbox') {
+                $pecahnilai = explode("___", remove_utf8_bom($pecahparameter[1]));
+                $IDPRODUK = $pecahnilai[0];
+                $QTY = $pecahnilai[1];
+                $HARGABELI = $pecahnilai[2];
+                $result = db_query("SELECT hargapokok,stok FROM product WHERE idproduct='%d'", $IDPRODUK);
+                $data = db_fetch_object($result);
+                $HARGAPOKOK = $data->hargapokok;
+                $STOKSEBELUM = $data->stok;
+                $ExpiredDate = $pecahnilai[3];
+                $barcodeBatch = create_barcode_batch();
+                //idpembelian, idproduct, jumlah, hargapokok, hargapokok
+                db_query("INSERT INTO detailpembelian(idpembelian, idproduct, jumlah, hargapokok, hargapokoksebelumnya,expired_date,barcode_batch) VALUES
+			    ('%d', '%d', '%f', '%f','%f','%s','%s')",
+                    $next_id, $IDPRODUK, $QTY, $HARGABELI, $HARGAPOKOK, $ExpiredDate, $barcodeBatch);
+                if ($HARGAPOKOK <> $HARGABELI) {
+                    db_query("INSERT INTO historyhargabeli (hargasebelum, hargasesudah, uid) VALUES('%f','%f','%d')",
+                        $HARGAPOKOK, $HARGABELI, $user->uid);
+                    db_query("UPDATE product SET hargapokok='%f' WHERE idproduct='%d'", $HARGABELI, $IDPRODUK);
+                }
+                $STOKSEKARANG = $STOKSEBELUM + $QTY;
+                db_query("UPDATE product SET stok='%f' WHERE idproduct='%d'", $STOKSEKARANG, $IDPRODUK);
+                $KETERANGAN = 'Pembelian';
+                db_query("INSERT INTO transaksistock (idproduk, idpembelian, stocksebelum, masuk, stocksetelah, keterangan) VALUES 
+			    ('%d', '%d', '%f', '%f', '%f', '%s')", $IDPRODUK, $next_id, $STOKSEBELUM, $QTY, $STOKSEKARANG, $KETERANGAN);
+            }
 		}
 	}else{
 		print 'error';	
@@ -240,6 +246,7 @@ function view_kasir_pembelian(){
 	$kasirtabel .= '<th class="qty">QTY</th>';
 	$kasirtabel .= '<th class="subtotal">SUBTOTAL</th>';
 	$kasirtabel .= '<th class="qty">STOK</th>';
+    $kasirtabel .= '<th class="tanggal">EXPIRE</th>';
 	$kasirtabel .= '</tr>';
 	$kasirtabel .= '</thead>';
 	$kasirtabel .= '<tbody>';

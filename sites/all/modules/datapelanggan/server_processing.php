@@ -1229,6 +1229,18 @@ function serverSideArraySubKategori($request){
 	$output['selected'] =  $idSubKategori;
 	return $output;
 }
+function serverSideArraySupplier($request){
+    $strSQL = 'SELECT idsupplier, kodesupplier, namasupplier FROM supplier';
+    $result = db_query($strSQL);
+    $output = array();
+    while($data = db_fetch_object($result)){
+        $output[$data->idsupplier] = $data->kodesupplier.' => '.$data->namasupplier;
+    }
+    $strSQL = 'SELECT idsupplier FROM product WHERE idproduct=%d';
+    $idSupplier = db_result(db_query($strSQL, $request['idproduk']));
+    $output['selected'] =  $idSupplier;
+    return $output;
+}
 function serverSideArraySatuan($request){
 	$strSQL = 'SELECT satuan FROM satuan ORDER BY satuan';
 	$result = db_query($strSQL);
@@ -1781,6 +1793,8 @@ if ($_GET['request_data'] == 'pelanggan'){
 	$returnArray = serverSideArrayKategori($_GET);
 }else if($_GET['request_data'] == 'subkategori'){
 	$returnArray = serverSideArraySubKategori($_GET);
+}else if($_GET['request_data'] == 'supplier'){
+    $returnArray = serverSideArraySupplier($_GET);
 }else if($_GET['request_data'] == 'satuan'){
 	$returnArray = serverSideArraySatuan($_GET);
 }else if($_GET['request_data'] == 'allproduct'){

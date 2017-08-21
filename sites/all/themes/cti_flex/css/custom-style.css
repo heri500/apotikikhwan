@@ -37,7 +37,7 @@ table th.diskon2{
 	width: 50px;	
 }
 table th.tanggal{
-	width: 130px;
+	width: 130px !important;
 }
 table th.qty{
 	width: 80px;
