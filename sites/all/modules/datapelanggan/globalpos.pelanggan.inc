@@ -40,6 +40,9 @@ function data_pelanggan(){
 	$viewtabelpelanggan .= '<label>TELEPON</label><input type="text" id="telp" name="telp">';
 	$viewtabelpelanggan .= '<label>ALAMAT</label><input type="text" id="alamat" name="alamat">';
 	$viewtabelpelanggan .= '<label>EMAIL</label><input type="text" id="email" name="email">';
+    $viewtabelpelanggan .= '<label>SERVER</label><input type="text" id="url_database" name="url_database">';
+    $viewtabelpelanggan .= '<label>USERNAME</label><input type="text" id="username" name="username">';
+    $viewtabelpelanggan .= '<label>PASSWORD</label><input type="password" id="password" name="password">';
 	$viewtabelpelanggan .= '<button style="font-size: 12px;">Tambah Pelanggan</button></div></form>';
 	$viewtabelpelanggan .= '<div class="button-sync"><button id="sync-hutang-pelanggan" style="font-size: 12px;">Sync Hutang Pelanggan</button></div>';
 	$viewtabelpelanggan .= '<div style="width: 80%;">'.tabel_pelanggan().'</div>';
@@ -176,6 +179,9 @@ function tabel_pelanggan(){
 	$tabelPelanggan .= '<th>TELP</th>';
 	$tabelPelanggan .= '<th>ALAMAT</th>';
 	$tabelPelanggan .= '<th>EMAIL</th>';
+    $tabelPelanggan .= '<th>SERVER</th>';
+    $tabelPelanggan .= '<th>USERNAME</th>';
+    $tabelPelanggan .= '<th>PASSWORD</th>';
 	$tabelPelanggan .= '<th>PIUTANG</th>';
 	$tabelPelanggan .= '<th>AKHIR</th>';
 	$tabelPelanggan .= '<th class="tanggal">UPDATE</th>';
@@ -183,7 +189,7 @@ function tabel_pelanggan(){
 	$tabelPelanggan .= '</thead>';
 	$tabelPelanggan .= '<tfoot>';
 	$tabelPelanggan .= '<tr>';
-	$tabelPelanggan .= '<th style="text-align:right;" colspan="8">Total:&nbsp;&nbsp;</th>';
+	$tabelPelanggan .= '<th style="text-align:right;" colspan="11">Total:&nbsp;&nbsp;</th>';
 	$totalhutang = getTotalHutangPelanggan();
 	$tabelPelanggan .= '<th class="angka" colspan="3">Rp. '.number_format($totalhutang,0,',','.').'</th>';
 	$tabelPelanggan .= '</tr>';
@@ -197,8 +203,10 @@ function tabel_pelanggan(){
  */
 function simpan_pelanggan(){
 	if (isset($_POST['kodepelanggan']) AND isset($_POST['namapelanggan'])){
-		db_query("INSERT INTO pelanggan(kodepelanggan,namapelanggan,telp,alamat,email) VALUES('%s','%s','%s','%s','%s')",
-		strtoupper($_POST['kodepelanggan']),$_POST['namapelanggan'],$_POST['telp'],$_POST['alamat'],$_POST['email']);
+		db_query("INSERT INTO pelanggan(kodepelanggan,namapelanggan,telp,alamat,email,url_database,username,password) 
+        VALUES('%s','%s','%s','%s','%s','%s','%s','%s')",
+		strtoupper($_POST['kodepelanggan']),$_POST['namapelanggan'],$_POST['telp'],$_POST['alamat'],$_POST['email'],
+            $_POST['url_database'],$_POST['username'],$_POST['password']);
 		if (isset($_POST['asal'])){
 			$result = db_query("SELECT idpelanggan FROM pelanggan WHERE kodepelanggan='%s' AND namapelanggan='%s'",
 			strtoupper($_POST['kodepelanggan']),$_POST['namapelanggan']);
@@ -229,7 +237,14 @@ function update_pelanggan(){
 		$sql_update = "UPDATE pelanggan SET alamat='%s' WHERE idpelanggan='%d'";
 	}elseif ($KOLOM == '7'){
 		$sql_update = "UPDATE pelanggan SET email='%s' WHERE idpelanggan='%d'";
-	}
+	}elseif ($KOLOM == '8'){
+        $sql_update = "UPDATE pelanggan SET url_database='%s' WHERE idpelanggan='%d'";
+    }elseif ($KOLOM == '7'){
+        $sql_update = "UPDATE pelanggan SET username='%s' WHERE idpelanggan='%d'";
+    }elseif ($KOLOM == '7'){
+        $sql_update = "UPDATE pelanggan SET password='%s' WHERE idpelanggan='%d'";
+    }
+
 	db_query($sql_update,$NILAI,$PELANGGAN_ID);
 	echo $NILAI;
 	exit();

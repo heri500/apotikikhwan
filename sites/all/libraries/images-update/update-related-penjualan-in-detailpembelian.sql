@@ -1,0 +1,1 @@
+ALTER TABLE `detailpembelian` ADD `idpenjualan` TEXT NULL AFTER `qty_sell`;

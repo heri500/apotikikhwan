@@ -1,0 +1,62 @@
+<?php
+
+function datapekerja_menu() {
+    $items['datapekerja'] = array(
+        'title' => t('Data Pekerja'),
+        'description' => 'Manajemen Data Pekerja',
+        'page callback' => 'data_pekerja',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Pekerja'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.pekerja.inc'
+    );
+    $items['simpanpekerja'] = array(
+        'title' => t('Simpan Pekerja'),
+        'description' => 'Simpan Pekerja',
+        'page callback' => 'simpan_pekerja',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Pekerja'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.pekerja.inc'
+    );
+    $items['updatepekerja'] = array(
+        'title' => t('Update Pekerja'),
+        'description' => 'Update Pekerja',
+        'page callback' => 'update_pekerja',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Pekerja'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.pekerja.inc'
+    );
+    return $items;
+} // end hook menu
+
+function datapekerja_perm() {
+    return array('Admin Data Pekerja');
+}
+
+function createPekerjaSelection($defaultValue = null, $emptyText = '-Pilih Pekerja-', $inisialUlang = false){
+    if ($inisialUlang){
+        $pilihpekerja = '<select id="idpekerja" name="idpekerja" onchange="inisialulang();">';
+    }else{
+        $pilihpekerja = '<select id="idpekerja" name="idpekerja">';
+    }
+    if (empty($defaultValue)){
+        $pilihpekerja .= '<option selected value="0">'.$emptyText.'</option>';
+    }else{
+        $pilihpekerja .= '<option value="0">'.$emptyText.'</option>';
+    }
+    $resultpekerja = db_query("SELECT id,nama FROM {datapekerja}");
+    if (!empty($defaultValue)){
+        $selectedpekerja = $defaultValue;
+    }
+    while ($datapekerja = db_fetch_object($resultpekerja)){
+        if ($datapekerja->id == $selectedpekerja){
+            $pilihpekerja .= '<option selected value="'.$datapekerja->id.'">'.$datapekerja->nama.'</option>';
+        }else{
+            $pilihpekerja .= '<option value="'.$datapekerja->id.'">'.$datapekerja->nama.'</option>';
+        }
+    }
+    $pilihpekerja .= '</select>';
+    return $pilihpekerja;
+}

@@ -82,9 +82,39 @@ function tampilkantabelpelanggan(){
                 'indicator': 'Menyimpan...',
                 'tooltip': 'Klik untuk mengubah...'
             });
-            $('td', row).eq(8).addClass('angka');
-            $('td', row).eq(9).addClass('angka');
-            $('td', row).eq(10).addClass('center');
+            $('td', row).eq(8).addClass('editable').editable(alamatupdate, {
+                'submitdata': function ( value, settings ) {
+                    return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 8 };
+                },
+                'height': '20px',
+                'submit': 'Ok',
+                'cancel': 'Batal',
+                'indicator': 'Menyimpan...',
+                'tooltip': 'Klik untuk mengubah...'
+            });
+            $('td', row).eq(9).addClass('editable').editable(alamatupdate, {
+                'submitdata': function ( value, settings ) {
+                    return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 9 };
+                },
+                'height': '20px',
+                'submit': 'Ok',
+                'cancel': 'Batal',
+                'indicator': 'Menyimpan...',
+                'tooltip': 'Klik untuk mengubah...'
+            });
+            $('td', row).eq(10).addClass('editable').editable(alamatupdate, {
+                'submitdata': function ( value, settings ) {
+                    return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 10 };
+                },
+                'height': '20px',
+                'submit': 'Ok',
+                'cancel': 'Batal',
+                'indicator': 'Menyimpan...',
+                'tooltip': 'Klik untuk mengubah...'
+            });
+            $('td', row).eq(11).addClass('angka');
+            $('td', row).eq(12).addClass('angka');
+            $('td', row).eq(13).addClass('center');
         },
         buttons: [
             'copy', 'excel', 'print'

@@ -51,6 +51,8 @@ function reproduksi(){
 	$reproduksi .= 'Jam';
 	$reproduksi .= '</div>';
 	$reproduksi .= '<div id="tempatkosong">';
+	$reproduksi .= '<div id="tempatsupplier"><label>PEKERJA</label></div>';
+	$reproduksi .= '<div id="tempatsupplier2">'.createPekerjaSelection().'</div>';
 	$reproduksi .= '</div>';
 	$reproduksi .= '</div>';
 	$reproduksi .= '<div id="barcode_place">SCAN ATAU INPUT BARCODE, KODE ATAU NAMA PRODUK : <input type="text" id="barcode" name="barcode" class="barcodekasir"></div>';
@@ -84,7 +86,7 @@ function reproduksi(){
 
 function simpan_reproduksi(){
 	//nonota, idpemakai, total, bayar, kembali
-	if ($_POST["detail_produk"] AND $_POST["totalbelanja"]){
+	if (isset($_POST["detail_produk"]) && isset($_POST["totalbelanja"]) && isset($_POST["idpekerja"])){
 		$result = db_query("SELECT idreproduksi FROM reproduksi ORDER BY idreproduksi DESC LIMIT 1");
 		$data = db_fetch_object($result);
 		if ($data->idreproduksi > 0){
@@ -97,9 +99,9 @@ function simpan_reproduksi(){
 		//date_default_timezone_set('Asia/Jakarta');
 		$waktujual = $_POST["tglreproduksi"]." ".date("H:i:s");
 		global $user;
-		db_query("INSERT INTO reproduksi (nonota, idpemakai, total, tglreproduksi) 
-		VALUES ('%s', '%d', '%f', '%s')",
-		$no_nota, $user->uid, $_POST["totalbelanja"], $waktujual);
+		db_query("INSERT INTO reproduksi (nonota, idpemakai, total, tglreproduksi, idpekerja) 
+		VALUES ('%s', '%d', '%f', '%s', '%d')",
+		$no_nota, $user->uid, $_POST["totalbelanja"], $waktujual, $_POST["idpekerja"]);
 		print $_POST["detail_produk"];
 		$pecahdetail = explode("&",$_POST["detail_produk"]);
 		$totalmodal = 0;
@@ -121,7 +123,7 @@ function simpan_reproduksi(){
 			$next_id,$IDPRODUK,$QTY,$HARGAPOKOK,$HARGAJUAL);
 			$STOKSEKARANG = $STOKSEBELUM - $QTY;
 			db_query("UPDATE product SET stok='%f' WHERE idproduct='%d'",$STOKSEKARANG,$IDPRODUK);
-			$KETERANGAN = 'Packing Ulang';
+			$KETERANGAN = 'Keperluan Produksi';
 			db_query("INSERT INTO transaksistock (idproduk, idreproduksi, stocksebelum, keluar, stocksetelah, keterangan) VALUES 
 			('%d', '%d', '%f', '%f', '%f', '%s')",$IDPRODUK,$next_id,$STOKSEBELUM,$QTY,$STOKSEKARANG,$KETERANGAN);
 		}

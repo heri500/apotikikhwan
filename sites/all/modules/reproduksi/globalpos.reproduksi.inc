@@ -167,14 +167,15 @@ function tabel_reproduksi($tgl1,$tgl2){
 	$tabelreproduksi .= '<th title="Total nilai modal hasil packing">M. HASIL</th>';
 	$tabelreproduksi .= '<th title="Total nilai laba hasil packing">L. HASIL</th>';
 	$tabelreproduksi .= '<th>KASIR</th>';
+	$tabelreproduksi .= '<th>PEKERJA</th>';
 	$tabelreproduksi .= '</tr>';
 	$tabelreproduksi .= '</thead>';
 	$tabelreproduksi .= '<tbody>';
 	$result = db_query("SELECT idreproduksi, name, nonota, SUBSTR(tglreproduksi,1,10) AS
 	tanggal,SUBSTR(tglreproduksi,11,9) AS waktu, idpemakai, total, totalmodal,
-	(total-totalmodal) AS laba FROM
-	reproduksi a LEFT JOIN cms_users b
-	ON a.idpemakai = b.uid
+	(total-totalmodal) AS laba, c.nama FROM reproduksi a 
+	LEFT JOIN cms_users b ON a.idpemakai = b.uid
+	LEFT JOIN {datapekerja} c ON a.idpekerja = c.id
 	WHERE  SUBSTR(tglreproduksi,1,10) BETWEEN '%s' AND '%s' ORDER BY idreproduksi",
 	$tgl1,$tgl2);
 	$totaljual = 0;
@@ -209,6 +210,7 @@ function tabel_reproduksi($tgl1,$tgl2){
 		$tabelreproduksi .= '<td class="angka">'.number_format($modalrepro,0,",",".").'</td>';
 		$tabelreproduksi .= '<td class="angka">'.number_format($labarepro,0,",",".").'</td>';
 		$tabelreproduksi .= '<td class="center">'.$data->name.'</td>';
+		$tabelreproduksi .= '<td class="center">'.$data->nama.'</td>';
 		$tabelreproduksi .= '</tr>';
 		$totaljual = $totaljual + $data->total;
 		$totalmodal = $totalmodal + $data->totalmodal;
@@ -224,7 +226,8 @@ function tabel_reproduksi($tgl1,$tgl2){
 	$tabelreproduksi .= '<th style="text-align: right">Rp. '.number_format($totaljualhasil,0,",",".").'&nbsp;&nbsp;</th>';
 	$tabelreproduksi .= '<th style="text-align: right">Rp. '.number_format($totalmodalhasil,0,",",".").'&nbsp;&nbsp;</th>';
 	$tabelreproduksi .= '<th style="text-align: right">Rp. '.number_format($totallabahasil,0,",",".").'&nbsp;&nbsp;</th>';
-	$tabelreproduksi .= '<th></th>';
+	$tabelreproduksi .= '<th>&nbsp;</th>';
+	$tabelreproduksi .= '<th>&nbsp;</th>';
 	$tabelreproduksi .= '</tr>';
 	$tabelreproduksi .= '</tfoot>';
 	$tabelreproduksi .= '</table>';

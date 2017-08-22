@@ -1,0 +1,1 @@
+ALTER TABLE `pelanggan` ADD `url_database` VARCHAR(255) NULL AFTER `email`, ADD `username` VARCHAR(255) NULL AFTER `url_database`, ADD `password` VARCHAR(255) NULL AFTER `username`;

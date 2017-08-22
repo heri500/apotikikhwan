@@ -309,6 +309,7 @@ function simpan_penjualan(){
 			$QTY = $pecahnilai[1];
 			$HARGAJUAL = $pecahnilai[2];
 			$DISKON = $pecahnilai[3];
+			$batchCode = $pecahnilai[4];
 			$result = db_query("SELECT type_product, hargapokok,stok FROM product WHERE idproduct='%d'",$IDPRODUK);	
 			$data = db_fetch_object($result);
 			$HARGAPOKOK = $data->hargapokok;
@@ -341,6 +342,109 @@ function simpan_penjualan(){
 				$strSQL = "UPDATE detailcustomerorder SET sisa = sisa - %f, diambil = %d, status_order = %d WHERE id = %d";
 				db_query($strSQL, $QTY, $intTanggal, $statusDetail, $detailCustomerOrder[$IDPRODUK]->id);
 			}
+			if ($batchCode != 0){
+			    $strSQL = "SELECT jumlah FROM detailpembelian WHERE barcode_batch='%s'";
+                $qtyBuy = db_result(db_query($strSQL,$batchCode));
+                $strSQL = "SELECT qty_sell FROM detailpembelian WHERE barcode_batch='%s'";
+                $qtySell = db_result(db_query($strSQL,$batchCode));
+                $qtyLeft = $qtyBuy - $qtySell;
+                $strSQL = "SELECT idpenjualan FROM detailpembelian WHERE barcode_batch='%s'";
+                $idPenjualan = db_result(db_query($strSQL,$batchCode));
+                if ($qtyLeft >= $QTY){
+                    if (!empty($idPenjualan)){
+                        $idPenjualan .= ';'.$next_id;
+                    }else{
+                        $idPenjualan = $next_id;
+                    }
+                    $qtySell = $qtySell + $QTY;
+                    $strSQL = "UPDATE detailpembelian SET qty_sell = '%f', idpenjualan = '%s' WHERE barcode_batch='%s'";
+                    db_query($strSQL,$qtySell,$idPenjualan,$batchCode);
+                }else{
+                    if (!empty($idPenjualan)){
+                        $idPenjualan .= ';'.$next_id;
+                    }else{
+                        $idPenjualan = $next_id;
+                    }
+                    $qtyOther = $qtySell + $QTY - $qtyBuy;
+                    $qtySell = $qtyBuy;
+                    $strSQL = "UPDATE detailpembelian SET qty_sell = '%f', idpenjualan = '%s' WHERE barcode_batch='%s'";
+                    db_query($strSQL,$qtySell,$idPenjualan,$batchCode);
+                    while ($qtyOther > 0){
+                        $strSQL = "SELECT barcode_batch FROM detailpembelian WHERE jumlah > qty_sell AND (barcode_batch != '' AND  barcode_batch IS NOT NULL) ORDER BY expired_date LIMIT 1";
+                        $batchCodeOther = db_result(db_query($strSQL));
+                        if (!empty($batchCodeOther)) {
+                            $strSQL = "SELECT jumlah FROM detailpembelian WHERE barcode_batch='%s'";
+                            $qtyBuy = db_result(db_query($strSQL, $batchCodeOther));
+                            $strSQL = "SELECT qty_sell FROM detailpembelian WHERE barcode_batch='%s'";
+                            $qtySell = db_result(db_query($strSQL, $batchCodeOther));
+                            $qtyLeft = $qtyBuy - $qtySell;
+                            $strSQL = "SELECT idpenjualan FROM detailpembelian WHERE barcode_batch='%s'";
+                            $idPenjualan = db_result(db_query($strSQL, $batchCodeOther));
+                            if ($qtyLeft >= $qtyOther) {
+                                if (!empty($idPenjualan)) {
+                                    $idPenjualan .= ';' . $next_id;
+                                } else {
+                                    $idPenjualan = $next_id;
+                                }
+                                $qtySell = $qtySell + $qtyOther;
+                                $strSQL = "UPDATE detailpembelian SET qty_sell = '%f', idpenjualan = '%s' WHERE barcode_batch='%s'";
+                                db_query($strSQL, $qtySell, $idPenjualan, $batchCodeOther);
+                                $qtyOther = 0;
+                            } else {
+                                if (!empty($idPenjualan)) {
+                                    $idPenjualan .= ';' . $next_id;
+                                } else {
+                                    $idPenjualan = $next_id;
+                                }
+                                $qtyOther = $qtySell + $qtyOther - $qtyBuy;
+                                $qtySell = $qtyBuy;
+                                $strSQL = "UPDATE detailpembelian SET qty_sell = '%f', idpenjualan = '%s' WHERE barcode_batch='%s'";
+                                db_query($strSQL, $qtySell, $idPenjualan, $batchCodeOther);
+                            }
+                        }else{
+                            $qtyOther = 0;
+                        }
+                    }
+                }
+            }else{
+                $qtyOther = $QTY;
+                while ($qtyOther > 0){
+                    $strSQL = "SELECT barcode_batch FROM detailpembelian WHERE jumlah > qty_sell AND (barcode_batch != '' AND  barcode_batch IS NOT NULL) ORDER BY expired_date LIMIT 1";
+                    $batchCodeOther = db_result(db_query($strSQL));
+                    if (!empty($batchCodeOther)) {
+                        $strSQL = "SELECT jumlah FROM detailpembelian WHERE barcode_batch='%s'";
+                        $qtyBuy = db_result(db_query($strSQL, $batchCodeOther));
+                        $strSQL = "SELECT qty_sell FROM detailpembelian WHERE barcode_batch='%s'";
+                        $qtySell = db_result(db_query($strSQL, $batchCodeOther));
+                        $qtyLeft = $qtyBuy - $qtySell;
+                        $strSQL = "SELECT idpenjualan FROM detailpembelian WHERE barcode_batch='%s'";
+                        $idPenjualan = db_result(db_query($strSQL, $batchCodeOther));
+                        if ($qtyLeft >= $qtyOther) {
+                            if (!empty($idPenjualan)) {
+                                $idPenjualan .= ';' . $next_id;
+                            } else {
+                                $idPenjualan = $next_id;
+                            }
+                            $qtySell = $qtySell + $qtyOther;
+                            $strSQL = "UPDATE detailpembelian SET qty_sell = '%f', idpenjualan = '%s' WHERE barcode_batch='%s'";
+                            db_query($strSQL, $qtySell, $idPenjualan, $batchCodeOther);
+                            $qtyOther = 0;
+                        } else {
+                            if (!empty($idPenjualan)) {
+                                $idPenjualan .= ';' . $next_id;
+                            } else {
+                                $idPenjualan = $next_id;
+                            }
+                            $qtyOther = $qtySell + $qtyOther - $qtyBuy;
+                            $qtySell = $qtyBuy;
+                            $strSQL = "UPDATE detailpembelian SET qty_sell = '%f', idpenjualan = '%s' WHERE barcode_batch='%s'";
+                            db_query($strSQL, $qtySell, $idPenjualan, $batchCodeOther);
+                        }
+                    }else{
+                        $qtyOther = 0;
+                    }
+                }
+            }
 		}
 		if (isset($_POST['idtitipanlaundry']) && !empty($_POST['idtitipanlaundry'])){
 			$totalLaundry = db_result(db_query("SELECT COUNT(*) FROM detaillaundry WHERE idtitipanlaundry='%d'",$_POST['idtitipanlaundry']));
@@ -416,42 +520,78 @@ function hitung_omset($tgl = null){
 	}
 }
 function cari_produk(){
-	if ($_POST["katacari"]){
-		$KATACARI = '%'.$_POST["katacari"].'%';
-		//$sql = "SELECT idproduct,idkategori,namaproduct,hargajual FROM product WHERE alt_code LIKE '$KATACARI' OR barcode LIKE '$KATACARI' OR namaproduct LIKE '$KATACARI'";
-		$result = db_query("SELECT idproduct,idkategori,namaproduct,hargajual,lead_time,aturan_jam_kerja,
-		berlaku_sebelum_zuhur FROM product WHERE (alt_code LIKE '%s' OR barcode LIKE '%s' 
-		OR UPPER(namaproduct) LIKE '%s') AND status_product = 1 LIMIT 50",$KATACARI,$KATACARI,$KATACARI);
-		$data = db_fetch_object($result);
-		if ($data->idproduct){
-			$result2 = db_query("SELECT besardiskon FROM diskonkategori WHERE idpelanggan='%d' AND idkategori='%d'",
-			$_POST["idpelanggan"],$data->idkategori);
-			$datadiskon = db_fetch_object($result2);
-			if ($datadiskon->besardiskon >=0 ){
-				$DISKON = $datadiskon->besardiskon;
-			}else{
-				$DISKON = 0;
-			}
-			if ($_POST["idpelanggan"] == 0){
-				$DISKON = 0;
-			}
-			$takeTime = calculateTakeTime($data->lead_time, $_POST["waktumasuk"],$data->aturan_jam_kerja,$data->berlaku_sebelum_zuhur);
-			print $data->idproduct.';'.$data->namaproduct.';'.$data->hargajual.';'.$DISKON.';'.$takeTime[0].';'.$takeTime[1];
-		}else{
-			print "error";
-		}
+	if (isset($_POST["katacari"])){
+        $strSQL = "SELECT idproduct FROM detailpembelian WHERE barcode_batch='%s'";
+        $idBarang = db_result(db_query($strSQL,$_POST["katacari"]));
+        $items = array();
+        if (!empty($idBarang)){
+            //$result = db_query("SELECT barcode, alt_code, namaproduct, stok, hargajual FROM product WHERE idproduct=%d", $idBarang);
+            $result = db_query("SELECT idproduct,idkategori,namaproduct,hargajual,lead_time,aturan_jam_kerja,
+		    berlaku_sebelum_zuhur FROM product WHERE idproduct=%d", $idBarang);
+            $data = db_fetch_object($result);
+            if ($data->idproduct) {
+                $result2 = db_query("SELECT besardiskon FROM diskonkategori WHERE idpelanggan='%d' AND idkategori='%d'",
+                    $_POST["idpelanggan"], $data->idkategori);
+                $datadiskon = db_fetch_object($result2);
+                if ($datadiskon->besardiskon >= 0) {
+                    $DISKON = $datadiskon->besardiskon;
+                } else {
+                    $DISKON = 0;
+                }
+                if ($_POST["idpelanggan"] == 0) {
+                    $DISKON = 0;
+                }
+                $takeTime = calculateTakeTime($data->lead_time, $_POST["waktumasuk"], $data->aturan_jam_kerja, $data->berlaku_sebelum_zuhur);
+                print $data->idproduct . ';' . $data->namaproduct . ';' . $data->hargajual . ';' . $DISKON . ';' . $takeTime[0] . ';' . $takeTime[1] .';'. $_POST["katacari"];
+            } else {
+                print "error";
+            }
+        }else {
+            $KATACARI = '%' . $_POST["katacari"] . '%';
+            //$sql = "SELECT idproduct,idkategori,namaproduct,hargajual FROM product WHERE alt_code LIKE '$KATACARI' OR barcode LIKE '$KATACARI' OR namaproduct LIKE '$KATACARI'";
+            $result = db_query("SELECT idproduct,idkategori,namaproduct,hargajual,lead_time,aturan_jam_kerja,
+		    berlaku_sebelum_zuhur FROM product WHERE (alt_code LIKE '%s' OR barcode LIKE '%s' 
+		    OR UPPER(namaproduct) LIKE '%s') AND status_product = 1 LIMIT 50", $KATACARI, $KATACARI, $KATACARI);
+            $data = db_fetch_object($result);
+            if ($data->idproduct) {
+                $result2 = db_query("SELECT besardiskon FROM diskonkategori WHERE idpelanggan='%d' AND idkategori='%d'",
+                $_POST["idpelanggan"], $data->idkategori);
+                $datadiskon = db_fetch_object($result2);
+                if ($datadiskon->besardiskon >= 0) {
+                    $DISKON = $datadiskon->besardiskon;
+                } else {
+                    $DISKON = 0;
+                }
+                if ($_POST["idpelanggan"] == 0) {
+                    $DISKON = 0;
+                }
+                $takeTime = calculateTakeTime($data->lead_time, $_POST["waktumasuk"], $data->aturan_jam_kerja, $data->berlaku_sebelum_zuhur);
+                print $data->idproduct . ';' . $data->namaproduct . ';' . $data->hargajual . ';' . $DISKON . ';' . $takeTime[0] . ';' . $takeTime[1] .';0';
+            } else {
+                print "error";
+            }
+        }
 	}
 	exit();	
 }
 function cari_barang(){
-	if ($_GET["term"]){
-		$KATACARI = '%'.$_GET["term"].'%';
-		$result = db_query("SELECT barcode, alt_code, namaproduct, stok, hargajual FROM product WHERE (alt_code LIKE '%s' OR barcode LIKE '%s' OR UPPER(namaproduct) LIKE '%s') AND status_product=1 LIMIT 50",$KATACARI,$KATACARI,$KATACARI);
-		$items = array();
-		while ($data = db_fetch_object($result)){
-			$items[] = array('value' => $data->namaproduct.'--->[Rp. '.number_format($data->hargajual,0,',','.').']['.$data->stok.']','barcode' => $data->barcode,'alt_code' => $data->alt_code);
-		}
-		print json_encode($items);
+	if (isset($_GET["term"])){
+        $strSQL = "SELECT idproduct FROM detailpembelian WHERE barcode_batch='%s'";
+	    $idBarang = db_result(db_query($strSQL,$_GET["term"]));
+        $items = array();
+        if (!empty($idBarang)){
+            $result = db_query("SELECT barcode, alt_code, namaproduct, stok, hargajual FROM product WHERE idproduct=%d", $idBarang);
+            while ($data = db_fetch_object($result)) {
+                $items[] = array('value' => $data->namaproduct . '--->[Rp. ' . number_format($data->hargajual, 0, ',', '.') . '][' . $data->stok . ']', 'barcode' => $data->barcode, 'alt_code' => $data->alt_code, 'barcode_batch' => $_GET["term"]);
+            }
+        }else {
+            $KATACARI = '%' . $_GET["term"] . '%';
+            $result = db_query("SELECT idproduct, barcode, alt_code, namaproduct, stok, hargajual FROM product WHERE (alt_code LIKE '%s' OR barcode LIKE '%s' OR UPPER(namaproduct) LIKE '%s') AND status_product=1 LIMIT 50", $KATACARI, $KATACARI, $KATACARI);
+            while ($data = db_fetch_object($result)) {
+                $items[] = array('value' => $data->namaproduct . '--->[Rp. ' . number_format($data->hargajual, 0, ',', '.') . '][' . $data->stok . ']', 'barcode' => $data->barcode, 'alt_code' => $data->alt_code, 'barcode_batch' => '0');
+            }
+        }
+        print json_encode($items);
 	}
 	exit();	
 }

@@ -42,7 +42,8 @@ function serverSidePelanggan($request){
 	$searchQuery = $searchArray['value'];
 	$arrayColumn = array(
 		'','','','plg.kodepelanggan','plg.namapelanggan','plg.telp', 'plg.alamat',
-		'plg.email','ptg.besarhutang','ptg.pembayaranterakhir','bayarterakhir'
+		'plg.email','plg.url_database','plg.username','plg.password',
+        'ptg.besarhutang','ptg.pembayaranterakhir','bayarterakhir'
 	);
 	$orderColumnArray = $_REQUEST['order'];
 	$orderColumn = $arrayColumn[$orderColumnArray[0]['column']].' '.$orderColumnArray[0]['dir'];
@@ -55,6 +56,7 @@ function serverSidePelanggan($request){
 	$firstRecord = $pageStart;
 	$lastRecord = $pageStart + $pageLength;
 	$strSQL = "SELECT plg.idpelanggan,plg.kodepelanggan,plg.namapelanggan,plg.telp,plg.alamat,plg.email,";
+    $strSQL .= "plg.url_database, plg.username, plg.password, ";
 	$strSQLFilteredTotal = "SELECT COUNT(plg.idpelanggan) ";
 	$strSQL .= "ptg.besarhutang, ptg.pembayaranterakhir, SUBSTR(ptg.last_update,1,10) AS bayarterakhir ";
 	$strSQL .= "FROM pelanggan AS plg ";
@@ -89,6 +91,9 @@ function serverSidePelanggan($request){
 		$rowData[] = $data->telp;
 		$rowData[] = $data->alamat;
 		$rowData[] = $data->email;
+        $rowData[] = $data->url_database;
+        $rowData[] = $data->username;
+        $rowData[] = $data->password;
 		$rowData[] = number_format($data->besarhutang,0,",",".");
 		$rowData[] = number_format($data->pembayaranterakhir,0,",",".");
 		$rowData[] = $data->bayarterakhir;

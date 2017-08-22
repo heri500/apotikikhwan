@@ -1,0 +1,19 @@
+<?php
+
+function datapekerja_install() {
+    $success = drupal_install_schema('datapekerja');
+    if ($success) {
+        drupal_set_message(st('Module data pekerja berhasil diinstall.'));
+    }
+    else {
+        drupal_set_message(st('Module data pekerja gagal diinstall.'), 'error');
+    }
+}
+
+function datapekerja_schema(){
+    require 'datapekerja.schema.inc';
+    return $schema;
+}
+function datapekerja_uninstall() {
+    drupal_uninstall_schema('datapekerja');
+}
