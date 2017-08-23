@@ -6,6 +6,7 @@ var totalproduk = 0;
 var barisrubah;
 var tglsekarang = '';
 var tgltampil = '';
+var cetakstruk = 0;
 function tampilkantabelkasir(){
 	oTable = $('#tabel_kasir').dataTable( {
 		'bJQueryUI': true,
@@ -115,7 +116,8 @@ function tambahproduk(){
 		}
 	});
 }
-function kirim_data(){
+function kirim_data(cetak){
+    cetakstruk = cetak;
 	if (totalproduk > 0){
 		var sData = $('input', oTable.fnGetNodes()).serialize();
 		$('#nilaikirim').val(sData);
@@ -178,18 +180,18 @@ function hapus_produk(posisi,nTr,idproduk){
 	$('#barcode').focus();
 	$('#barcode').select();
 }
-function akhiri_belanja(){
+function akhiri_belanja(cetak){
 	if ($('#carabayar').val() == 'TUNAI'){
 		if ($('#nilaibayar').val() >= totalbelanja){
-			do_selesai();
+			do_selesai(cetak);
 		}else{
 			alert('Mohon isi pembayaran dengan nilai yang lebih besar atau sama dengan Total Belanja...!!!');
 		}
 	}else if ($('#carabayar').val() == 'HUTANG'){
-		do_selesai();
+		do_selesai(cetak);
 	}
 }
-function do_selesai(){
+function do_selesai(cetak){
 	var request = new Object();
 	request.idsupplier = $('#idsupplier').val();
 	request.detail_produk = $('#nilaikirim').val();
@@ -204,6 +206,10 @@ function do_selesai(){
 		data: request,
 		cache: false,
 		success: function(data){
+			alert(cetak);
+            if (cetak == 1){
+                window.open(pathutama + "print/6?idpembelian="+ data.trim());
+            }
 			if (data != 'error'){
 				window.location = pathutama + 'pembelian/kasir?tanggal='+ request.tglbeli;
 			}else{
@@ -363,7 +369,10 @@ $(document).ready(function(){
 				$('#dialogwarning').dialog('open');
 			}
 		}else if (e.keyCode == 116 || e.keyCode == 117){
-			kirim_data();
+			if (e.keyCode == 117){
+                cetakstruk = 1;
+			}
+			kirim_data(cetakstruk);
 		}else if (e.keyCode == 115){
 			hapus_latest_produk();
 		}else if (e.keyCode == 113){
@@ -447,7 +456,7 @@ $(document).ready(function(){
 		kembali = $('#nilaibayar').val()-totalbelanja;
 		$('#kembali').val('Rp. '+ number_format(kembali,0,',','.'));
 		if (e.keyCode == 13){
-			akhiri_belanja();
+			akhiri_belanja(cetakstruk);
 		}
 	});
 	$('#tglbeli').datepicker({

@@ -783,6 +783,48 @@ function getPremisInformation(){
 	}
 	return $dataPremis;
 }
+
+function printProductBatchCode(){
+    drupal_add_js('misc/media/jquery-1.4.4.min.js');
+    $js_path = drupal_get_path('module','penjualan').'/js/direct.print.js';
+    _addBarcodePlugins();
+    drupal_add_js($js_path);
+    $js_path = drupal_get_path('module','pembelian').'/js/batch.barcode.js';
+    drupal_add_js($js_path);
+    $tablePrint = '';
+    $idPembelian = isset($_GET['idpembelian']) ? $_GET['idpembelian'] : null;
+    if (!empty($idPembelian)){
+        $printPage = 0;
+        $result = db_query("SELECT barcode_batch, expired_date, jumlah FROM detailpembelian 
+        WHERE idpembelian='%d'",$idPembelian);
+        while ($data = db_fetch_object($result)){
+            $totalPrint = $data->jumlah;
+            $barcode = $data->barcode_batch;
+            $expired = $data->expired_date;
+            if (!empty($barcode) && $totalPrint > 0) {
+                for ($j = 0;$j < $totalPrint;$j++) {
+                    if ($printPage == 0) {
+                        $tablePrint .= '<table style="width: 190px;border-collapse: collapse;" >';
+                        $tablePrint .= '<tbody>';
+                    } else {
+                        $tablePrint .= '<table style="width: 190px;border-collapse: collapse;" class="pagebreak">';
+                        $tablePrint .= '<tbody>';
+                        $tablePrint .= '<tr><td colspan="2" style="font-size: 8px;">&nbsp;</td></tr>';
+                    }
+                    $tablePrint .= '<tr>';
+                    $tablePrint .= '<td>';
+                    $tablePrint .= '<div id="' . $barcode . '" class="barcode-place" align="center"></div>';
+                    $tablePrint .= '<div class="standard-font" align="center" style="width: 100%;">' . $expired . '</div>';
+                    $tablePrint .= '</td></tr>';
+                    $tablePrint .= '</tbody>';
+                    $tablePrint .= '</table>';
+                    $printPage++;
+                }
+            }
+        }
+    }
+    return $tablePrint;
+}
 function cekPrinterCommand(){
 	$printOut = '';
 	if (isset($_GET['nidlaundry'])){
@@ -811,6 +853,8 @@ function cekPrinterCommand(){
 		}else{
 			$printOut = printProductBarcodeWithLogo2();
 		}
-	}
+	}else if (isset($_GET['idpembelian'])){
+        $printOut = printProductBatchCode();
+    }
 	return $printOut;
 }

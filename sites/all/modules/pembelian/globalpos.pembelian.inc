@@ -37,8 +37,8 @@ function pembelian(){
 	$tombolcari = '<a id="tombolubahharga" class="cari" onclick="ubahharga()">F2:UBAH HARGA</a>';
 	$tombolqty = '<a id="tombolubahqty" onclick="ubahqty()" class="buttonqty">F3:UBAH QTY</a>';
 	$tombolhapus = '<a class="buttonhapus" onclick="hapus_latest_produk()" title="Hapus produk">F4:HAPUS</a>';
-	$tombolselesai = '<a class="buttonselesai" onclick="kirim_data()">F5:SELESAI</a>';
-	$tombolprint = '<a class="buttonprint" onclick="kirim_data()">F6:SELESAI & PRINT</a>';
+	$tombolselesai = '<a class="buttonselesai" onclick="kirim_data(0)">F5:SELESAI</a>';
+	$tombolprint = '<a class="buttonprint" onclick="kirim_data(1)">F6:SELESAI & PRINT</a>';
 	$pembelian = '<button onclick="munculkankasir();" style="font-size:12px;border: 1px solid orangered;">'.strtoupper("Klik untuk memunculkan form pembelian").'</button>';
 	$pembelian .= '<div id="dialogkasir" style="font-size: 12px;" title="GLOBAL POS PEMBELIAN ['.$tgltampil.']">';
 	$pembelian .= '<div id="info-kasir-waktu">';
@@ -131,7 +131,7 @@ function simpan_pembelian(){
 		db_query("INSERT INTO pembelian (nonota, idpemakai, total, bayar, kembali, tglpembelian, carabayar) VALUES ('%s', '%d', '%f', '%f', '%f', '%s', '%s')",
 		$no_nota, $user->uid, $_POST["totalbelanja"], $_POST["bayar"], $kembali, $waktujual, $caraBayar);
 		$next_id = db_last_insert_id('pembelian', 'idpembelian');
-		print $_POST["detail_produk"];
+		print $next_id;
 		if ($kembali < 0){
 			db_query("INSERT INTO detailhutang (idsupplier, idpembelian, besarhutang) VALUES ('%d','%d','%f')",
 			$_POST["idsupplier"],$next_id,abs($kembali));
