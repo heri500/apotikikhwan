@@ -152,12 +152,13 @@ function getTotalPembelian2($field_name1 = null, $field_name2 = null, $tglAwal =
 
 function create_barcode_batch()
 {
-    $newBarcode = getRandomString();
+    $newBarcode = createEAN13Code(getRandomString(9));
     $barcodeExists = true;
     while ($barcodeExists){
         $barcodeCount = db_result(db_query("SELECT COUNT(*) FROM detailpembelian WHERE barcode_batch='%s' LIMIT 1",$newBarcode));
-        if ($barcodeCount){
-            $newBarcode = getRandomString();
+        $barcodeCount2 = db_result(db_query("SELECT COUNT(*) FROM product WHERE barcode='%s' LIMIT 1",$newBarcode));
+        if ($barcodeCount || $barcodeCount2){
+            $newBarcode = createEAN13Code(getRandomString(9));
             $barcodeExists = true;
         }else{
             $barcodeExists = false;

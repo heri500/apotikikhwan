@@ -1,6 +1,6 @@
 $(document).ready(function(){
     var renderer = "bmp";
-    var btype = "code11";
+    var btype = "ean13";
     var settings = {
         output:renderer,
         barWidth: 1,
