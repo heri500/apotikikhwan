@@ -1,0 +1,1 @@
+ALTER TABLE `pembelian` ADD `jatuh_tempo` DATE NULL AFTER `keterangan`;

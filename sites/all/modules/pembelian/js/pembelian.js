@@ -206,8 +206,7 @@ function do_selesai(cetak){
 		data: request,
 		cache: false,
 		success: function(data){
-			alert(cetak);
-            if (cetak == 1){
+			if (cetak == 1){
                 window.open(pathutama + "print/6?idpembelian="+ data.trim());
             }
 			if (data != 'error'){

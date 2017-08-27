@@ -309,7 +309,7 @@ require_once 'attachplugins.inc';
 require_once 'penjualan.api.inc';
 
 function getRandomStringAjax(){
-	print createEAN13Code(getRandomString(9));
+	print create_barcode_batch();
 	exit();
 }
 function get_updated_penjualan(){

@@ -57,5 +57,5 @@ function _addBarcodePlugins(){
 	drupal_add_js('sites/all/libraries/barcode/jquery-barcode.min.js');
 }
 function _addBarcodePlugins2(){
-    drupal_add_js('sites/all/libraries/barcode/JsBarcode.all.js');
+    drupal_add_js('sites/all/libraries/barcode/JsBarcode.all.min.js');
 }

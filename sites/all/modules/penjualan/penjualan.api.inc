@@ -795,26 +795,31 @@ function printProductBatchCode(){
     $idPembelian = isset($_GET['idpembelian']) ? $_GET['idpembelian'] : null;
     if (!empty($idPembelian)){
         $printPage = 0;
-        $result = db_query("SELECT barcode_batch, expired_date, jumlah FROM detailpembelian 
+        $result = db_query("SELECT barcode_batch, expired_date, jumlah,prod.namaproduct, prod.hargajual 
+        FROM detailpembelian beli LEFT JOIN product prod ON beli.idproduct=prod.idproduct
         WHERE idpembelian='%d'",$idPembelian);
         while ($data = db_fetch_object($result)){
             $totalPrint = $data->jumlah;
             $barcode = $data->barcode_batch;
             $expired = $data->expired_date;
+            $namaProduct = substr($data->namaproduct,0,22);
+            $hargaJual = number_format($data->hargajual,0,',','.');
             if (!empty($barcode) && $totalPrint > 0) {
                 for ($j = 0;$j < $totalPrint;$j++) {
                     if ($printPage == 0) {
                         $tablePrint .= '<table style="width: 190px;border-collapse: collapse;" >';
                         $tablePrint .= '<tbody>';
+                        $tablePrint .= '<tr><td colspan="2" style="font-size: 8px;">&nbsp;</td></tr>';
                     } else {
                         $tablePrint .= '<table style="width: 190px;border-collapse: collapse;" class="pagebreak">';
                         $tablePrint .= '<tbody>';
+                        $tablePrint .= '<tr><td colspan="2" style="font-size: 8px;">&nbsp;</td></tr>';
                         $tablePrint .= '<tr><td colspan="2" style="font-size: 8px;">&nbsp;</td></tr>';
                     }
                     $tablePrint .= '<tr>';
                     $tablePrint .= '<td>';
                     $tablePrint .= '<div id="' . $barcode . '" class="barcode-place" align="center"></div>';
-                    $tablePrint .= '<div class="standard-font" align="center" style="width: 100%;">' . $expired . '</div>';
+                    $tablePrint .= '<div class="standard-font" align="center" style="width: 100%;">' . $namaProduct . '&nbsp;&nbsp;Rp. '.$hargaJual.'</div>';
                     $tablePrint .= '</td></tr>';
                     $tablePrint .= '</tbody>';
                     $tablePrint .= '</table>';
@@ -822,6 +827,49 @@ function printProductBatchCode(){
                 }
             }
         }
+    }
+    return $tablePrint;
+}
+function printLabelHarga(){
+    drupal_add_js('misc/media/jquery-1.4.4.min.js');
+    $js_path = drupal_get_path('module','penjualan').'/js/direct.print.js';
+    drupal_add_js($js_path);
+    _addBarcodePlugins2();
+    $js_path = drupal_get_path('module','penjualan').'/js/labelBarcode.js';
+    drupal_add_js($js_path);
+    $products = isset($_POST['selected-product-print']) ? $_POST['selected-product-print'] : null;
+    $explodeProduct = explode('||',$products);
+    $pathLogo = createLogoImagePath();
+    if (!empty($explodeProduct) && count($explodeProduct)) {
+        $printPage = 0;
+        $productsData = array();
+        for ($i = 0; $i < count($explodeProduct); $i++) {
+            $productData = explode('__', $explodeProduct[$i]);
+            $idProduct = $productData[0];
+            $dataProduct = getDataProduct($idProduct);
+            $productsData[] = $dataProduct['info'];
+            if ($printPage == 0) {
+                $tablePrint .= '<table style="width: 190px;border-collapse: collapse;" >';
+                $tablePrint .= '<tbody>';
+            } else {
+                $tablePrint .= '<table style="width: 190px;border-collapse: collapse;" class="pagebreak">';
+                $tablePrint .= '<tbody>';
+            }
+            $tablePrint .= '<tr><td style="font-size: 8px;">&nbsp;</td></tr>';
+            $tablePrint .= '<tr><td colspan="2" style="font-size: 14px;font-weight: bold;">' . strtoupper($dataProduct['info']->namaproduct) . '</td></tr>';
+            $tablePrint .= '<tr><td colspan="2" style="font-size: 35px;font-weight: bold;"><sup style="font-size: 14px;">Rp.</sup>' . number_format($dataProduct['info']->hargajual, 0, ',', '.') . '</td></tr>';
+            $tablePrint .= '<tr><td rowspan="2" style="width: 52px;"><img height="48" src="' . $pathLogo . '" /></td>';
+            $tablePrint .= '<td><svg id="barcode-'.$dataProduct['info']->barcode.'" class="barcode"></svg></td>';
+            $tablePrint .= '</tr>';
+            $tablePrint .= '<tr><td style="font-size: 13px;font-weight: bold;">' . $dataProduct['info']->barcode . '</td></tr>';
+            $tablePrint .= '</tbody>';
+            $tablePrint .= '</table>';
+        }
+        drupal_add_js(
+            array(
+                'dataProduct' => $productsData,
+            ),
+        'setting');
     }
     return $tablePrint;
 }
@@ -848,13 +896,17 @@ function cekPrinterCommand(){
 	}else if (isset($_POST['selected-product-print'])){
 		if (isset($_POST['sticker-type']) && $_POST['sticker-type'] == 0){
 			$printOut = printProductBarcodeWithLogo2();
-		}else if(isset($_POST['sticker-type']) && $_POST['sticker-type'] == 1){
-			$printOut = printProductBarcodeWithLogo3();
+		}else if(isset($_POST['sticker-type']) && $_POST['sticker-type'] == 1) {
+            $printOut = printProductBarcodeWithLogo3();
+        }else if(isset($_POST['sticker-type']) && $_POST['sticker-type'] == 2){
+            $printOut = printLabelHarga();
 		}else{
 			$printOut = printProductBarcodeWithLogo2();
 		}
 	}else if (isset($_GET['idpembelian'])){
         $printOut = printProductBatchCode();
+    }else if (isset($_GET['idprodlabel'])){
+        $printOut = printLabelHarga();
     }
 	return $printOut;
 }

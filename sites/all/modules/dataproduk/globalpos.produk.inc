@@ -131,8 +131,8 @@ function data_produk(){
 	$pilihanstatus .= '<button id="export-xls" onclick="export_to_xls();">Export XLS</button>&nbsp;&nbsp;';
 	$pilihanstatus .= '<button id="nonaktifkan">Non Aktifkan</button>&nbsp;&nbsp;';
 	$pilihanstatus .= '<button id="aktifkan">Aktifkan</button>&nbsp;&nbsp;';
-	$pilihanstatus .= '<button id="print-barcode-biasa">Print Barcode</button>&nbsp;&nbsp;';
-	$pilihanstatus .= '<button id="print-barcode-logo">Print Barcode Logo</button>&nbsp;&nbsp;';
+	//$pilihanstatus .= '<button id="print-barcode-biasa">Print Barcode</button>&nbsp;&nbsp;';
+	$pilihanstatus .= '<button id="print-price-label">Print Price Label</button>&nbsp;&nbsp;';
 	$pilihanstatus .= '<button id="print-barcode-tanpa-harga">Barcode 50x25</button>&nbsp;&nbsp;';
 	$pilihanstatus .= '<button id="print-barcode-50x15">Barcode 50x15</button>';
 	$pilihanstatus .= '</span>';

@@ -254,7 +254,7 @@ function view_kasir_pembelian(){
 	$kasirtabel .= '</table>';
 	return $kasirtabel;
 }
-function view_tabel_pembelian(){
+function view_tabel_pembelian_old(){
 	$path = drupal_get_path('theme', 'cti_flex');
  	$form_style = $path.'/css/custom-style.css';
  	drupal_add_css($form_style, 'theme', 'all', FALSE);
@@ -310,82 +310,145 @@ function view_tabel_pembelian(){
 	return $viewpembelian;
 }
 
-function tabel_pembelian($tgl1,$tgl2){
-	//nonota, tglpembelian, idpemakai, idlangganan, total, 
-	//totalmodal, carabayar, bayar, kembali
-	$tgl1 = date('Y-m-d', strtotime($tgl1));
-	$tgl2 = date('Y-m-d', strtotime($tgl2));
-	$tabelpembelian ='<table cellpadding="0" cellspacing="0" border="0" class="display" id="tabel_pembelian">';
-	$tabelpembelian .= '<thead>';
-	$tabelpembelian .= '<tr>';
-	$tabelpembelian .= '<th class="tablebutton"></th>';
-	if (cekUserRoles()){
-		$tabelpembelian .= '<th class="tablebutton"></th>';
-	}
-	$tabelpembelian .= '<th>NO. NOTA</th>';
-	$tabelpembelian .= '<th class="tanggal">HARI</th>';
-	$tabelpembelian .= '<th class="tanggal">TGL</th>';
-	$tabelpembelian .= '<th class="tanggal">JAM</th>';
-	if (cekUserRoles()){
-		$tabelpembelian .= '<th>TOTAL</th>';
-		$tabelpembelian .= '<th>BAYAR</th>';
-		$tabelpembelian .= '<th>KEMBALI</th>';
-		$tabelpembelian .= '<th>KASIR</th>';
-	}
-	$tabelpembelian .= '</tr>';
-	$tabelpembelian .= '</thead>';
-	$tabelpembelian .= '<tbody>';
-	$result = db_query("SELECT idpembelian, name, nonota, SUBSTR(tglpembelian,1,10) AS tanggal,SUBSTR(tglpembelian,11,6) AS waktu, idpemakai, total, bayar, kembali FROM
-	pembelian a, cms_users b WHERE a.idpemakai = b.uid AND SUBSTR(tglpembelian,1,10) BETWEEN '%s' AND '%s' ORDER BY idpembelian",
-	$tgl1,$tgl2);
-	$totalmodal = 0;
-	$totalbayar = 0;
-	$totalkembali = 0;
-	$arrayhari = arrayHari();
-	drupal_add_js(
-		array(
-			'namahari' => $arrayhari,
-		), 
-	'setting');
-	while($data = db_fetch_object($result)){
-		$idpembelian = $data->idpembelian;
-		$tabelpembelian .= '<tr>';
-		$tomboldetail = '<img title="Klik untuk melihat detail pembelian" onclick="view_detail(\''.$data->idpembelian.'\',\''.$data->nonota.'\');" src="'.base_path().'misc/media/images/forward_enabled.ico">';
-		$tombolhapus = '<img title="Klik untuk menghapus pembelian" onclick="delete_pembelian(\''.$data->idpembelian.'\',\''.$data->nonota.'\');" src="'.base_path().'misc/media/images/del.ico" width="22">';
-		$tabelpembelian .= '<td class="center">'.$tomboldetail.'</td>';
-		if (cekUserRoles()){
-			$tabelpembelian .= '<td class="center">'.$tombolhapus.'</td>';
-		}
-		$tabelpembelian .= '<td class="center">'.$data->nonota.'</td>';
-		$indexhari = date('w', strtotime($data->tanggal));
-		$tabelpembelian .= '<td id="haripembelian-'.$idpembelian.'" class="center">'.$arrayhari[$indexhari].'</td>';
-		$tabelpembelian .= '<td id="tglpembelian-'.$idpembelian.'" class="center edit-tanggal">'.date('d-m-Y', strtotime($data->tanggal)).'</td>';
-		$tabelpembelian .= '<td id="jampembelian-'.$idpembelian.'" class="center edit-jam">'.$data->waktu.'</td>';
-		if (cekUserRoles()){
-			$tabelpembelian .= '<td class="angka">'.number_format($data->total,0,",",".").'</td>';
-			$tabelpembelian .= '<td class="angka">'.number_format($data->bayar,0,",",".").'</td>';
-			$tabelpembelian .= '<td class="angka">'.number_format($data->kembali,0,",",".").'</td>';
-			$tabelpembelian .= '<td class="center">'.$data->name.'</td>';
-		}
-		$tabelpembelian .= '</tr>';
-		$totalmodal = $totalmodal + $data->total;
-		$totalbayar = $totalbayar + $data->bayar;
-		$totalkembali = $totalkembali + $data->kembali;
-	}
-	$tabelpembelian .= '</tbody>';
-	if (cekUserRoles()){
-		$tabelpembelian .= '<tfoot>';
-		$tabelpembelian .= '<tr>';
-		$tabelpembelian .= '<th style="text-align:right" colspan="6">Total:&nbsp;&nbsp;</th>';
-		$tabelpembelian .= '<th style="text-align: right">Rp. '.number_format($totalmodal,0,",",".").'&nbsp;&nbsp;</th>';
-		$tabelpembelian .= '<th style="text-align: right">Rp. '.number_format($totalbayar,0,",",".").'&nbsp;&nbsp;</th>';
-		$tabelpembelian .= '<th style="text-align: right">Rp. '.number_format($totalkembali,0,",",".").'&nbsp;&nbsp;</th>';
-		$tabelpembelian .= '<th></th>';
-		$tabelpembelian .= '</tr>';
-		$tabelpembelian .= '</tfoot>';
-	}
-	$tabelpembelian .= '</table>';
-	return $tabelpembelian;
+function view_tabel_pembelian(){
+    $path = drupal_get_path('theme', 'cti_flex');
+    $form_style = $path.'/css/custom-style.css';
+    drupal_add_css($form_style, 'theme', 'all', FALSE);
+    if ($_POST["tgl1"] AND $_POST["tgl2"]){
+        $tgl1 = $_POST["tgl1"];
+        $tgl2 = $_POST["tgl2"];
+    }else{
+        $tgl1 = date("Y-m-d");
+        $tgl2 = date("Y-m-d");
+    }
+    $addedFilter = '';
+    $filterId = 0;
+    if ($_POST["pilihantampil"] == 'NOTA'){
+        $nota = 'selected="selected"';
+        $idSupplier = isset($_POST['idsupplier']) ? $_POST['idsupplier'] : 0;
+        $tabeltampil = tabel_pembelian($tgl1,$tgl2, $idSupplier);
+        $urutan = 1;
+        $tampilData = 0;
+        $addedFilter = createSupplierSelection($idSupplier,'ALL', false).'<input type="hidden" id="idsupplier" name="idsupplier" value="0">';
+        if(isset($_POST['idsupplier'])){
+            $filterId = $_POST['idsupplier'];
+        }
+    }elseif ($_POST["pilihantampil"] == 'PRODUK'){
+        $produk = 'selected="selected"';
+        $idSupplier = isset($_POST['idsupplier']) ? $_POST['idsupplier'] : 0;
+        $tabeltampil = pembelian_produk($tgl1,$tgl2,$idSupplier);
+        $urutan = 3;
+        $tampilData = 1;
+        $addedFilter = createSupplierSelection($idSupplier,'ALL',false).'<input type="hidden" id="idsupplier" name="idsupplier" value="0">';
+        if (isset($_POST['idsupplier'])){
+            $filterId = $_POST['idsupplier'];
+        }
+    }else{
+        $idSupplier = isset($_POST['idsupplier']) ? $_POST['idsupplier'] : 0;
+        $tabeltampil = tabel_pembelian($tgl1,$tgl2,$idSupplier);
+        $nota = 'selected="selected"';
+        $urutan = 1;
+        $tampilData = 0;
+        $addedFilter = createSupplierSelection($idSupplier,'ALL', false).'<input type="hidden" id="idsupplier" name="idsupplier" value="0">';
+        if(isset($_POST['idsupplier'])){
+            $filterId = $_POST['idsupplier'];
+        }
+    }
+    drupal_add_css('misc/media/datatables.1.10/jquery/jquery-ui.css');
+    drupal_add_css('misc/media/datatables.1.10/media/css/dataTables.jqueryui.css');
+    drupal_add_css('misc/media/datatables.1.10/extensions/Buttons/css/buttons.dataTables.css');
+    drupal_add_css('misc/media/datatables.1.10/extensions/Buttons/css/buttons.jqueryui.css');
+    drupal_add_js('misc/media/datatables.1.10/media/js/jquery.js');
+    drupal_add_js('misc/media/jqueryValidate/js/jquery.validationEngine-en.js');
+    drupal_add_js('misc/media/jqueryValidate/js/jquery.validationEngine.js');
+    drupal_add_js('misc/media/datatables.1.10/jquery/jquery-ui.js');
+    _addJeditablePlugins();
+    _addTimePickerPlugins();
+    _addAutotabPlugins();
+    drupal_add_js('misc/media/datatables.1.10/media/js/jquery.dataTables.js');
+    drupal_add_js('misc/media/datatables.1.10/media/js/dataTables.jqueryui.js');
+    drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/dataTables.buttons.js');
+    drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.flash.js');
+    drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.html5.js');
+    drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.print.js');
+    drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.colVis.min.js');
+    $arrayhari = arrayHari();
+    drupal_add_js(
+        array(
+            'urutan' => $urutan,
+            'tampilData' => $tampilData,
+            'tglAwal' => $tgl1,
+            'tglAkhir' => $tgl2,
+            'filterId' => $filterId,
+            'namahari' => $arrayhari,
+        ),
+        'setting');
+    $modulePath = drupal_get_path('module','pembelian');
+    $jsPath = $modulePath.'/js/tabel.pembelian.js';
+    drupal_add_js($jsPath);
+    $pilihantampil = '<select id="pilihantampil" name="pilihantampil">';
+    $pilihantampil .= '<option '.$nota.'>NOTA</option>';
+    $pilihantampil .= '<option '.$produk.'>PRODUK</option>';
+    $pilihantampil .= '</select>';
+    $pilihperiode = '<form action="'.base_path().'pembelian/viewpembelian" method="post"><div id="pilihanperiode"><label>PILIH PERIODE PEMBELIAN </label><input readonly="readonly" type="text" id="tgl1" name="tgl1" value="'.$tgl1.'">';
+    $pilihperiode .= '<input readonly="readonly" type="text" id="tgl2" name="tgl2" value="'.$tgl2.'">'.$pilihantampil.'&nbsp;'.$addedFilter.'<button>LIHAT PEMBELIAN</button></div></form>';
+    $viewpembelian = $pilihperiode.'<div id="viewpembelian">'.$tabeltampil.'</div>';
+    $viewpembelian .= '<div id="dialogdetail" title="DETAIL PEMBELIAN">';
+    $viewpembelian .= '<div id="table-detail-wrapper"></div>';
+    $viewpembelian .= '<div id="add-new-item">';
+    $viewpembelian .= '<h5 class="no-margin">ADD NEW ITEM</h5>';
+    $inputProduct = '<input type="text" id="new-product" name="new-product" size="35">';
+    $inputProduct .= '<input type="hidden" id="idproduct" name="idproduct">';
+    $viewpembelian .= '<label>Product</label>'.$inputProduct;
+    $inputHarga = '<input type="text" id="harga-view" name="harga-view" size="10" readonly="readonly">';
+    $inputHarga .= '<input type="hidden" id="hargajual" name="hargajual">';
+    $inputHarga .= '<input type="hidden" id="hargapokok" name="hargapokok">';
+    $inputSubtotal = '<input type="text" id="subtotal-view" name="subtotal-view" size="14" readonly="readonly">';
+    $inputQty = '<input type="text" id="qty-new" name="qty-new" size="6">';
+    $viewpembelian .= $inputHarga.'<label class="small-label">Qty</label>'.$inputQty.$inputSubtotal;
+    $buttonAddNew = '<button id="add-new-button">Add Item</button>';
+    $buttonPrintSlip = '<button id="print-slip">Print Slip</button>';
+    $viewpembelian .= $buttonAddNew.'</div>'.$buttonPrintSlip;
+    $viewpembelian .= '</div>';
+    return $viewpembelian;
+}
+
+function tabel_pembelian()
+{
+    //nonota, tglpembelian, idpemakai, idlangganan, total,
+    //totalmodal, carabayar, bayar, kembali
+    $tabelpembelian = '<table cellpadding="0" cellspacing="0" border="0" class="display" id="tabel_pembelian">';
+    $tabelpembelian .= '<thead>';
+    $tabelpembelian .= '<tr>';
+    $tabelpembelian .= '<th class="tablebutton"></th>';
+    $tabelpembelian .= '<th class="tablebutton"></th>';
+    $tabelpembelian .= '<th>NO. NOTA</th>';
+    $tabelpembelian .= '<th class="tanggal">HARI</th>';
+    $tabelpembelian .= '<th class="tanggal">TGL</th>';
+    $tabelpembelian .= '<th class="tanggal">JAM</th>';
+    $tabelpembelian .= '<th>TOTAL</th>';
+    $tabelpembelian .= '<th>CARA BAYAR</th>';
+    $tabelpembelian .= '<th>BAYAR</th>';
+    $tabelpembelian .= '<th>KEMBALI</th>';
+    $tabelpembelian .= '<th>SUPPLIER</th>';
+    $tabelpembelian .= '<th>KASIR</th>';
+    $tabelpembelian .= '<th class="tablebutton"></th>';
+    $tabelpembelian .= '</tr>';
+    $tabelpembelian .= '</thead>';
+    $tabelpembelian .= '<tbody>';
+    $tabelpembelian .= '</tbody>';
+    $tabelpembelian .= '<tfoot>';
+    $tabelpembelian .= '<tr>';
+    $tabelpembelian .= '<th style="text-align:right" colspan="6">Total:&nbsp;&nbsp;</th>';
+    $tabelpembelian .= '<th style="text-align: right">&nbsp;&nbsp;</th>';
+    $tabelpembelian .= '<th style="text-align: right">&nbsp;&nbsp;</th>';
+    $tabelpembelian .= '<th style="text-align: right">&nbsp;&nbsp;</th>';
+    $tabelpembelian .= '<th style="text-align: right">&nbsp;&nbsp;</th>';
+    $tabelpembelian .= '<th colspan="3">&nbsp;</th>';
+    $tabelpembelian .= '</tr>';
+    $tabelpembelian .= '</tfoot>';
+    $tabelpembelian .= '</table>';
+    return $tabelpembelian;
 }
 
 function detail_pembelian(){

@@ -1770,6 +1770,248 @@ function serverSideCheckLogin($request){
     $retArray[] = $retData;
     return $retArray;
 }
+
+function arrayHariServerSide(){
+    $hari_array = array('Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu');
+    return $hari_array;
+}
+
+function serverSidePembelian($request){
+    global $baseDirectory;
+    $pageStart = $_GET['start'];
+    $pageLength = $_GET['length'];
+    $searchArray = $_REQUEST['search'];
+    $tglAwal = $_REQUEST['tglawal'].' 00:00';
+    $tglAkhir = $_REQUEST['tglakhir'].' 23:59';
+    $idsupplier = $_REQUEST['idsupplier'];
+    $searchQuery = $searchArray['value'];
+    $arrayhari = arrayHariServerSide();
+    $arrayColumn = array(
+        'pemb.idpembelian','pemb.nonota','pemb.tglpembelian','pemb.tglpembelian',
+        'pemb.total','pemb.totalmodal','(pemb.total - pemb.totalmodal)','pemb.carabayar',
+        'pemb.bayar','pemb.kembali','user.name','supp.namasupplier'
+    );
+    $orderColumnArray = $_REQUEST['order'];
+    $orderColumn = $arrayColumn[$orderColumnArray[0]['column']].' '.$orderColumnArray[0]['dir'];
+    if (is_null($pageStart)){
+        $pageStart = 0;
+    }
+    if (is_null($pageLength)){
+        $pageLength = 100;
+    }
+    $firstRecord = $pageStart;
+    $lastRecord = $pageStart + $pageLength;
+    $strSQL = "SELECT pemb.idpembelian,pemb.nonota,SUBSTR(pemb.tglpembelian,1,10) AS tanggal,";
+    $strSQL .= "SUBSTR(pemb.tglpembelian,12,5) AS waktu, pemb.idpemakai,pemb.total,";
+    $strSQL .= "pemb.carabayar,pemb.bayar,pemb.kembali,";
+    $strSQL .= "pemb.nokartu,pemb.keterangan,pemb.jatuh_tempo, user.name, supp.namasupplier, supp.idsupplier ";
+    $strSQLFilteredTotal = "SELECT COUNT(pemb.idpembelian) ";
+    $strSQL .= "FROM pembelian AS pemb ";
+    $strSQLFilteredTotal .= "FROM pembelian AS pemb ";
+    $strSQL .= "LEFT JOIN cms_users AS user ON user.uid = pemb.idpemakai ";
+    $strSQL .= "LEFT JOIN supplier AS supp ON supp.idsupplier = pemb.idsupplier ";
+    if (empty($idsupplier)){
+        $strSQL .= "WHERE pemb.tglpembelian BETWEEN '%s' AND '%s' ";
+    }else{
+        $strSQL .= "WHERE pemb.tglpembelian BETWEEN '%s' AND '%s' AND pemb.idsupplier=%d ";
+    }
+    $strSQLFilteredTotal .= "LEFT JOIN cms_users AS user ON user.uid = pemb.idpemakai ";
+    $strSQLFilteredTotal .= "LEFT JOIN supplier AS supp ON supp.idsupplier = pemb.idsupplier ";
+    if (empty($idsupplier)){
+        $strSQLFilteredTotal .= "WHERE pemb.tglpembelian BETWEEN '%s' AND '%s' ";
+    }else{
+        $strSQLFilteredTotal .= "WHERE pemb.tglpembelian BETWEEN '%s' AND '%s' AND pemb.idsupplier=%d ";
+    }
+    $strCriteria = "";
+    if (!empty($searchQuery)){
+        $strCriteria .= "AND (pemb.nonota LIKE '%%%s%%' OR SUBSTR(pemb.tglpembelian,1,10) LIKE '%%%s%%' ";
+        $strCriteria .= "OR SUBSTR(pemb.tglpembelian,11,9) LIKE '%%%s%%' OR user.name LIKE '%%%s%%' ";
+        $strCriteria .= "OR supp.namasupplier LIKE '%%%s%%' OR pemb.carabayar LIKE '%%%s%%' ";
+        $strCriteria .= ")";
+    }
+    if ($pageLength == -1){
+        $strSQL .= $strCriteria." ORDER BY $orderColumn";
+    }else{
+        $strSQL .= $strCriteria." ORDER BY $orderColumn LIMIT %d, %d";
+    }
+    $strSQLFilteredTotal .= $strCriteria;
+    if (!empty($searchQuery)){
+        if (empty($idsupplier)) {
+            if ($pageLength == -1) {
+                $result = db_query(
+                    $strSQL,
+                    $tglAwal,
+                    $tglAkhir,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery
+                );
+                $recordsFiltered = db_result(
+                    db_query(
+                        $strSQLFilteredTotal,
+                        $tglAwal,
+                        $tglAkhir,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery
+                    )
+                );
+            }else{
+                if ($pageLength == -1) {
+                    $result = db_query(
+                        $strSQL,
+                        $tglAwal,
+                        $tglAkhir,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery
+                    );
+                }else{
+                    $result = db_query(
+                        $strSQL,
+                        $tglAwal,
+                        $tglAkhir,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $firstRecord,
+                        $lastRecord
+                    );
+                }
+                $recordsFiltered = db_result(
+                    db_query(
+                        $strSQLFilteredTotal,
+                        $tglAwal,
+                        $tglAkhir,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery,
+                        $searchQuery
+                    )
+                );
+            }
+        }else{
+            if ($pageLength == -1) {
+                $result = db_query(
+                    $strSQL,
+                    $tglAwal,
+                    $tglAkhir,
+                    $idsupplier,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery
+                );
+            }else{
+                $result = db_query(
+                    $strSQL,
+                    $tglAwal,
+                    $tglAkhir,
+                    $idsupplier,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $firstRecord,
+                    $lastRecord
+                );
+            }
+            $recordsFiltered = db_result(
+                db_query(
+                    $strSQLFilteredTotal,
+                    $tglAwal,
+                    $tglAkhir,
+                    $idsupplier,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery,
+                    $searchQuery
+                )
+            );
+        }
+    }else{
+        if (empty($idsupplier)) {
+            $result = db_query($strSQL, $tglAwal, $tglAkhir, $firstRecord, $lastRecord);
+            $recordsFiltered = db_result(db_query($strSQLFilteredTotal, $tglAwal, $tglAkhir));
+        }else{
+            $result = db_query($strSQL, $tglAwal, $tglAkhir, $idsupplier, $firstRecord, $lastRecord);
+            $recordsFiltered = db_result(db_query($strSQLFilteredTotal, $tglAwal, $tglAkhir, $idsupplier));
+        }
+    }
+    $output = array();
+    while ($data = db_fetch_object($result)){
+        $rowData = array();
+        $imgDetail = "<img title=\"Klik untuk melihat detail pembelian\" onclick=\"view_detail(".$data->idpembelian.",'".$data->nonota."');\" src=\"$baseDirectory/misc/media/images/forward_enabled.ico\" width=\"22\">";
+        $tombolhapus = "<img title=\"Klik untuk menghapus pembelian\" onclick=\"delete_pembelian(".$data->idpembelian.",'".$data->nonota."');\" src=\"$baseDirectory/misc/media/images/del.ico\" width=\"22\">";
+        $rowData[] = $imgDetail;
+        $rowData[] = $tombolhapus;
+        $rowData[] = $data->nonota;
+        $indexhari = date('w', strtotime($data->tanggal));
+        $rowData[] = $arrayhari[$indexhari];
+        $rowData[] = $data->tanggal;
+        $rowData[] = $data->waktu;
+        $rowData[] = number_format($data->total,0,",",".");
+        $rowData[] = $data->carabayar;
+        $rowData[] = number_format($data->bayar,0,",",".");
+        $rowData[] = number_format($data->kembali,0,",",".");
+        $rowData[] = $data->namasupplier;
+        $rowData[] = $data->name;
+        $tombolprint = "<img title=\"Klik untuk mencetak barcode\" onclick=\"print_barcode_pembelian(".$data->idpembelian.",'".$data->nonota."');\" src=\"$baseDirectory/misc/media/images/print.png\" width=\"22\">";
+        $rowData[] = $tombolprint;
+        $rowData[] = $data->idpembelian;
+        $output[] = $rowData;
+    }
+    if (empty($idsupplier)) {
+        $recordsTotal = db_result(
+            db_query(
+                "SELECT COUNT(idpembelian) FROM pembelian WHERE tglpembelian BETWEEN '%s' AND '%s'",
+                $tglAwal,
+                $tglAkhir
+            )
+        );
+    }else{
+        $recordsTotal = db_result(
+            db_query(
+                "SELECT COUNT(idpembelian) FROM pembelian WHERE tglpembelian BETWEEN '%s' AND '%s' AND idsupplier=%d",
+                $tglAwal,
+                $tglAkhir,
+                $idsupplier
+            )
+        );
+    }
+    return array(
+        "draw"            => isset ( $request['draw'] ) ?
+            intval( $request['draw'] ) :
+            0,
+        "recordsTotal"    => intval( $recordsTotal ),
+        "recordsFiltered" => intval( $recordsFiltered ),
+        "data"            => $output,
+        "sql"			  => $strSQL,
+        "tglawal"		  => $tglAwal,
+        "tglakhir"		  => $tglAkhir,
+    );
+}
+
 if ($_GET['request_data'] == 'pelanggan'){
 	$returnArray = serverSidePelanggan($_GET);
 }else if($_GET['request_data'] == 'produk'){
@@ -1861,6 +2103,8 @@ if ($_GET['request_data'] == 'pelanggan'){
 }else if ($_GET['request_data'] == 'checkconnection'){
     header('Access-Control-Allow-Origin: *');
     $returnArray = serverSideCheckLogin($_GET);
+}else if($_GET['request_data'] == 'pembelian'){
+    $returnArray = serverSidePembelian($_GET);
 }
 header('Access-Control-Allow-Origin: *');
 echo json_encode($returnArray);

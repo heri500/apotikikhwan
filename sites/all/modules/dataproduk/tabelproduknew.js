@@ -651,7 +651,7 @@ $(document).ready(function() {
         }
     });
     tampilkantabelproduk();
-    $('#print-barcode-biasa').on('click', function(){
+    /*$('#print-barcode-biasa').on('click', function(){
         var selected_product = '';
         var counterData = 0;
         $('.barcode-select').each(function(){
@@ -689,6 +689,27 @@ $(document).ready(function() {
         });
         if (selected_product != ''){
             window.open(pathutama + 'print/6?idproductlogo='+ selected_product);
+        }
+    });*/
+    $('#print-price-label').on('click', function(){
+        var selected_product = '';
+        var counterData = 0;
+        $('.barcode-select').each(function(){
+            if ($(this).is(':checked')){
+                var strID = $(this).val();
+                if (counterData > 0){
+                    selected_product += '||'+ $(this).val() +'__'+ $('#print-'+ strID).val();
+                }else{
+                    selected_product = $(this).val() +'__'+ $('#print-'+ strID).val();
+                }
+                counterData++;
+            }
+
+        });
+        if (selected_product != ''){
+            $('#selected-product-print').val(selected_product);
+            $('#sticker-type').val(2);
+            $('#form-print').submit();
         }
     });
     $('#print-barcode-tanpa-harga').on('click', function(){
