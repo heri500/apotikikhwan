@@ -786,8 +786,10 @@ function getPremisInformation(){
 
 function printProductBatchCode(){
     drupal_add_js('misc/media/jquery-1.4.4.min.js');
+    $css_path = drupal_get_path('module','pembelian').'/css/print_custom.css';
+    drupal_add_css($css_path);
     $js_path = drupal_get_path('module','penjualan').'/js/direct.print.js';
-    _addBarcodePlugins();
+    _addBarcodePlugins2();
     drupal_add_js($js_path);
     $js_path = drupal_get_path('module','pembelian').'/js/batch.barcode.js';
     drupal_add_js($js_path);
@@ -798,6 +800,7 @@ function printProductBatchCode(){
         $result = db_query("SELECT barcode_batch, expired_date, jumlah,prod.namaproduct, prod.hargajual 
         FROM detailpembelian beli LEFT JOIN product prod ON beli.idproduct=prod.idproduct
         WHERE idpembelian='%d'",$idPembelian);
+        $barcodeData = array();
         while ($data = db_fetch_object($result)){
             $totalPrint = $data->jumlah;
             $barcode = $data->barcode_batch;
@@ -817,16 +820,25 @@ function printProductBatchCode(){
                         $tablePrint .= '<tr><td colspan="2" style="font-size: 8px;">&nbsp;</td></tr>';
                     }
                     $tablePrint .= '<tr>';
+                    $tablePrint .= '<td class="exp-cell" valign="bottom">';
+                    $tablePrint .= '<div class="exp-date">2018-10-01</div>';
+                    $tablePrint .= '</td>';
                     $tablePrint .= '<td>';
-                    $tablePrint .= '<div id="' . $barcode . '" class="barcode-place" align="center"></div>';
+                    $tablePrint .= '<svg id="barcode-' . $barcode . '" class="barcode-place" align="center"></svg>';
                     $tablePrint .= '<div class="standard-font" align="center" style="width: 100%;">' . $namaProduct . '&nbsp;&nbsp;Rp. '.$hargaJual.'</div>';
                     $tablePrint .= '</td></tr>';
                     $tablePrint .= '</tbody>';
                     $tablePrint .= '</table>';
                     $printPage++;
+                    $barcodeData[] = $barcode;
                 }
             }
         }
+        drupal_add_js(
+            array(
+                'barcodeData' => $barcodeData,
+            ),
+            'setting');
     }
     return $tablePrint;
 }

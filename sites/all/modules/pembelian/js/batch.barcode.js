@@ -1,13 +1,13 @@
 $(document).ready(function(){
-    var renderer = "bmp";
-    var btype = "ean13";
-    var settings = {
-        output:renderer,
-        barWidth: 1,
-        barHeight: 30
-    };
-    $(".barcode-place").each(function(){
-        barcode_value = $(this).attr('id');
-        $(this).barcode(barcode_value, btype, settings);
-    });
+    for (var i = 0; i < Drupal.settings.barcodeData.length;i++) {
+        var barcode_number = Drupal.settings.barcodeData[i];
+        JsBarcode("#barcode-" + barcode_number, barcode_number, {
+            format: "ean13",
+            flat: true,
+            width: 1.7,
+            height: 35,
+            margin: 0,
+            displayValue: false
+        });
+    }
 })
