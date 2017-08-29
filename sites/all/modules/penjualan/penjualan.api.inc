@@ -805,19 +805,17 @@ function printProductBatchCode(){
             $totalPrint = $data->jumlah;
             $barcode = $data->barcode_batch;
             $expired = $data->expired_date;
-            $namaProduct = substr($data->namaproduct,0,22);
+            $namaProduct = substr(strtoupper($data->namaproduct),0,18);
             $hargaJual = number_format($data->hargajual,0,',','.');
             if (!empty($barcode) && $totalPrint > 0) {
                 for ($j = 0;$j < $totalPrint;$j++) {
                     if ($printPage == 0) {
-                        $tablePrint .= '<table style="width: 190px;border-collapse: collapse;" >';
+                        $tablePrint .= '<table style="width: 190px;border-collapse: collapse;margin-top:-2px;" >';
                         $tablePrint .= '<tbody>';
-                        $tablePrint .= '<tr><td colspan="2" style="font-size: 8px;">&nbsp;</td></tr>';
                     } else {
                         $tablePrint .= '<table style="width: 190px;border-collapse: collapse;" class="pagebreak">';
                         $tablePrint .= '<tbody>';
-                        $tablePrint .= '<tr><td colspan="2" style="font-size: 8px;">&nbsp;</td></tr>';
-                        $tablePrint .= '<tr><td colspan="2" style="font-size: 8px;">&nbsp;</td></tr>';
+                        $tablePrint .= '<tr><td class="space-kosong">&nbsp;</td></tr>';
                     }
                     $tablePrint .= '<tr>';
                     $tablePrint .= '<td class="exp-cell" valign="bottom">';
@@ -825,7 +823,7 @@ function printProductBatchCode(){
                     $tablePrint .= '</td>';
                     $tablePrint .= '<td>';
                     $tablePrint .= '<svg id="barcode-' . $barcode . '" class="barcode-place" align="center"></svg>';
-                    $tablePrint .= '<div class="standard-font" align="center" style="width: 100%;">' . $namaProduct . '&nbsp;&nbsp;Rp. '.$hargaJual.'</div>';
+                    $tablePrint .= '<div class="barcode-font" align="center" style="width: 100%;">' . $namaProduct . '&nbsp;&nbsp;Rp. '.$hargaJual.'</div>';
                     $tablePrint .= '</td></tr>';
                     $tablePrint .= '</tbody>';
                     $tablePrint .= '</table>';
@@ -861,21 +859,21 @@ function printLabelHarga(){
             $dataProduct = getDataProduct($idProduct);
             $productsData[] = $dataProduct['info'];
             if ($printPage == 0) {
-                $tablePrint .= '<table style="width: 190px;border-collapse: collapse;" >';
+                $tablePrint .= '<table style="width: 190px;border-collapse: collapse;margin-top: -6px;" >';
                 $tablePrint .= '<tbody>';
             } else {
                 $tablePrint .= '<table style="width: 190px;border-collapse: collapse;" class="pagebreak">';
                 $tablePrint .= '<tbody>';
             }
-            $tablePrint .= '<tr><td style="font-size: 8px;">&nbsp;</td></tr>';
-            $tablePrint .= '<tr><td colspan="2" style="font-size: 14px;font-weight: bold;">' . strtoupper($dataProduct['info']->namaproduct) . '</td></tr>';
-            $tablePrint .= '<tr><td colspan="2" style="font-size: 35px;font-weight: bold;"><sup style="font-size: 14px;">Rp.</sup>' . number_format($dataProduct['info']->hargajual, 0, ',', '.') . '</td></tr>';
-            $tablePrint .= '<tr><td rowspan="2" style="width: 52px;"><img height="48" src="' . $pathLogo . '" /></td>';
+            $tablePrint .= '<tr><td colspan="2" style="font-size: 10px;font-weight: bold;padding-left: 4px;">' . strtoupper($dataProduct['info']->namaproduct) . '</td></tr>';
+            $tablePrint .= '<tr><td colspan="2" style="font-size: 30px;font-weight: bold;padding-left: 4px"><sup style="font-size: 10px;">Rp.</sup>' . number_format($dataProduct['info']->hargajual, 0, ',', '.') . '</td></tr>';
+            $tablePrint .= '<tr><td rowspan="2" style="width: 40px;"><img height="36" src="' . $pathLogo . '" /></td>';
             $tablePrint .= '<td><svg id="barcode-'.$dataProduct['info']->barcode.'" class="barcode"></svg></td>';
             $tablePrint .= '</tr>';
-            $tablePrint .= '<tr><td style="font-size: 13px;font-weight: bold;">' . $dataProduct['info']->barcode . '</td></tr>';
+            $tablePrint .= '<tr><td style="font-size: 10px;font-weight: bold;letter-spacing: 7px;">' . $dataProduct['info']->barcode . '</td></tr>';
             $tablePrint .= '</tbody>';
             $tablePrint .= '</table>';
+            $printPage++;
         }
         drupal_add_js(
             array(

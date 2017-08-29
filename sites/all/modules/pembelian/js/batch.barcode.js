@@ -5,7 +5,7 @@ $(document).ready(function(){
             format: "ean13",
             flat: true,
             width: 1.7,
-            height: 35,
+            height: 25,
             margin: 0,
             displayValue: false
         });

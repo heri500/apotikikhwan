@@ -4,7 +4,6 @@ var tglAwal = '';
 var tglAkhir = '';
 var urutan = 0;
 var tampilData = 0;
-var idpelanggan = 0;
 var idsupplier = 0;
 var selectedPenjualan = 0;
 var selectedNota = '';
@@ -33,7 +32,7 @@ function tampiltabelbeli(){
             'aaSorting': [[urutan, 'desc']],
             'processing': true,
             'serverSide': true,
-            'ajax': Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=pembelian&tglawal='+ tglAwal +'&tglakhir='+ tglAkhir +'&idpelanggan='+ Drupal.settings.filterId,
+            'ajax': Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=pembelian&tglawal='+ tglAwal +'&tglakhir='+ tglAkhir +'&idsupplier='+ Drupal.settings.filterId,
             buttons: [
                 {
                     extend: 'colvis',

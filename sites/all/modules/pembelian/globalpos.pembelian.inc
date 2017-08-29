@@ -485,54 +485,49 @@ function detail_pembelian(){
 	}
 	exit();	
 }
-function pembelian_produk($tgl1,$tgl2){
-	$tgl1 = date('Y-m-d', strtotime($tgl1)).' 00:00';
-	$tgl2 = date('Y-m-d', strtotime($tgl2)).' 23:59';
-	$tabelpembelian ='<table cellpadding="0" cellspacing="0" border="0" class="display" id="tabel_pembelian">';
-	$tabelpembelian .= '<thead>';
-	$tabelpembelian .= '<tr>';
-	$tabelpembelian .= '<th>BARCODE</th>';
-	$tabelpembelian .= '<th>PRODUK</th>';
-	$tabelpembelian .= '<th>SUPPLIER</th>';
-	$tabelpembelian .= '<th class="qty">QTY</th>';
-	if (cekUserRoles()){
-		$tabelpembelian .= '<th>H.MODAL</th>';
-		$tabelpembelian .= '<th>SUBTOTAL</th>';
-	}
-	$tabelpembelian .= '</tr>';
-	$tabelpembelian .= '</thead>';
-	$tabelpembelian .= '<tbody>';
-	$result = db_query("SELECT d.namasupplier, a.tglpembelian, c.barcode, c.namaproduct, SUM(b.jumlah) AS totalqty,
+function pembelian_produk($tgl1,$tgl2)
+{
+    $tgl1 = date('Y-m-d', strtotime($tgl1)) . ' 00:00';
+    $tgl2 = date('Y-m-d', strtotime($tgl2)) . ' 23:59';
+    $tabelpembelian = '<table cellpadding="0" cellspacing="0" border="0" class="display" id="tabel_pembelian">';
+    $tabelpembelian .= '<thead>';
+    $tabelpembelian .= '<tr>';
+    $tabelpembelian .= '<th>BARCODE</th>';
+    $tabelpembelian .= '<th>PRODUK</th>';
+    $tabelpembelian .= '<th>SUPPLIER</th>';
+    $tabelpembelian .= '<th class="qty">QTY</th>';
+    $tabelpembelian .= '<th>H.MODAL</th>';
+    $tabelpembelian .= '<th>SUBTOTAL</th>';
+    $tabelpembelian .= '</tr>';
+    $tabelpembelian .= '</thead>';
+    $tabelpembelian .= '<tbody>';
+    $result = db_query("SELECT d.namasupplier, a.tglpembelian, c.barcode, c.namaproduct, SUM(b.jumlah) AS totalqty,
 	c.hargapokok, SUM(b.hargapokok*b.jumlah) AS subtotal FROM
 	pembelian a LEFT JOIN detailpembelian b ON a.idpembelian=b.idpembelian
 	LEFT JOIN product c ON b.idproduct=c.idproduct
 	LEFT JOIN supplier d ON c.idsupplier=d.idsupplier
-	WHERE a.tglpembelian BETWEEN '%s' AND '%s' GROUP BY b.idproduct",$tgl1,$tgl2);
-	$totalmodal = 0;
-	while($data = db_fetch_object($result)){
-		$tabelpembelian .= '<tr>';
-		$tabelpembelian .= '<td>'.$data->barcode.'</td>';
-		$tabelpembelian .= '<td>'.$data->namaproduct.'</td>';
-		$tabelpembelian .= '<td>'.$data->namasupplier.'</td>';
-		$tabelpembelian .= '<td class="angka">'.$data->totalqty.'</td>';
-		if (cekUserRoles()){
-			$tabelpembelian .= '<td class="angka">'.$data->hargapokok.'</td>';
-			$tabelpembelian .= '<td class="angka">'.$data->subtotal.'</td>';
-		}
-		$tabelpembelian .= '</tr>';
-		$totalmodal = $totalmodal + $data->subtotal;
-	}
-	$tabelpembelian .= '</tbody>';
-	if (cekUserRoles()){
-		$tabelpembelian .= '<tfoot>';
-		$tabelpembelian .= '<tr>';
-		$tabelpembelian .= '<th style="text-align:right" colspan="5">Total:&nbsp;&nbsp;</th>';
-		$tabelpembelian .= '<th style="text-align: right">Rp. '.number_format($totalmodal,0,",",".").'&nbsp;&nbsp;</th>';
-		$tabelpembelian .= '</tr>';
-		$tabelpembelian .= '</tfoot>';
-	}
-	$tabelpembelian .= '</table>';
-	return $tabelpembelian;	
+	WHERE a.tglpembelian BETWEEN '%s' AND '%s' GROUP BY b.idproduct", $tgl1, $tgl2);
+    $totalmodal = 0;
+    while ($data = db_fetch_object($result)) {
+        $tabelpembelian .= '<tr>';
+        $tabelpembelian .= '<td>' . $data->barcode . '</td>';
+        $tabelpembelian .= '<td>' . $data->namaproduct . '</td>';
+        $tabelpembelian .= '<td>' . $data->namasupplier . '</td>';
+        $tabelpembelian .= '<td class="angka">' . $data->totalqty . '</td>';
+        $tabelpembelian .= '<td class="angka">' . $data->hargapokok . '</td>';
+        $tabelpembelian .= '<td class="angka">' . $data->subtotal . '</td>';
+        $tabelpembelian .= '</tr>';
+        $totalmodal = $totalmodal + $data->subtotal;
+    }
+    $tabelpembelian .= '</tbody>';
+    $tabelpembelian .= '<tfoot>';
+    $tabelpembelian .= '<tr>';
+    $tabelpembelian .= '<th style="text-align:right" colspan="5">Total:&nbsp;&nbsp;</th>';
+    $tabelpembelian .= '<th style="text-align: right">Rp. ' . number_format($totalmodal, 0, ",", ".") . '&nbsp;&nbsp;</th>';
+    $tabelpembelian .= '</tr>';
+    $tabelpembelian .= '</tfoot>';
+    $tabelpembelian .= '</table>';
+    return $tabelpembelian;
 }
 
 function DateAdd($v,$d=null , $f="m/d/Y"){ 
