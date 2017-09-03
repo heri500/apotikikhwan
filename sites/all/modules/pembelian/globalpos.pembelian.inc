@@ -397,11 +397,10 @@ function view_tabel_pembelian(){
     $viewpembelian .= '<div id="table-detail-wrapper"></div>';
     $viewpembelian .= '<div id="add-new-item">';
     $viewpembelian .= '<h5 class="no-margin">ADD NEW ITEM</h5>';
-    $inputProduct = '<input type="text" id="new-product" name="new-product" size="35">';
+    $inputProduct = '<input type="text" id="new-product" name="new-product" size="20"><input type="text" id="expired-date" name="expired-date" size="10" placeholder="expired">';
     $inputProduct .= '<input type="hidden" id="idproduct" name="idproduct">';
     $viewpembelian .= '<label>Product</label>'.$inputProduct;
     $inputHarga = '<input type="text" id="harga-view" name="harga-view" size="10" readonly="readonly">';
-    $inputHarga .= '<input type="hidden" id="hargajual" name="hargajual">';
     $inputHarga .= '<input type="hidden" id="hargapokok" name="hargapokok">';
     $inputSubtotal = '<input type="text" id="subtotal-view" name="subtotal-view" size="14" readonly="readonly">';
     $inputQty = '<input type="text" id="qty-new" name="qty-new" size="6">';
@@ -456,31 +455,25 @@ function detail_pembelian(){
 		$tabelpembelian ='<table cellpadding="0" cellspacing="0" border="0" class="display" id="tabel_detail_pembelian">';
 		$tabelpembelian .= '<thead>';
 		$tabelpembelian .= '<tr>';
+        $tabelpembelian .= '<th class="center tablebutton">&nbsp;</th>';
 		$tabelpembelian .= '<th>BARCODE</th>';
 		$tabelpembelian .= '<th>PRODUK</th>';
 		$tabelpembelian .= '<th class="qty">QTY</th>';
-		if (cekUserRoles()){
-			$tabelpembelian .= '<th>H.MODAL</th>';
-			$tabelpembelian .= '<th>SUBTOTAL</th>';
-		}
+		$tabelpembelian .= '<th>H.MODAL</th>';
+		$tabelpembelian .= '<th>SUBTOTAL</th>';
+        $tabelpembelian .= '<th class="center tablebutton">&nbsp;</th>';
 		$tabelpembelian .= '</tr>';
 		$tabelpembelian .= '</thead>';
 		$tabelpembelian .= '<tbody>';
-		$result = db_query("SELECT c.barcode, c.namaproduct, b.jumlah, b.hargapokok, (b.hargapokok*b.jumlah) AS subtotal FROM 
-		detailpembelian b, product c WHERE b.idproduct=c.idproduct AND b.idpembelian='%d'",$_POST["idpembelian"]);
-		while($data = db_fetch_object($result)){
-			$tabelpembelian .= '<tr>';
-			$tabelpembelian .= '<td>'.$data->barcode.'</td>';
-			$tabelpembelian .= '<td>'.$data->namaproduct.'</td>';
-			$tabelpembelian .= '<td class="angka">'.$data->jumlah.'</td>';
-			if (cekUserRoles()){
-				$tabelpembelian .= '<td class="angka">'.$data->hargapokok.'</td>';
-				$tabelpembelian .= '<td class="angka">'.$data->subtotal.'</td>';
-			}
-			$tabelpembelian .= '</tr>';
-		}
 		$tabelpembelian .= '</tbody>';
-		$tabelpembelian .= '</table><br><br>';
+        $tabelpembelian .= '<tfoot>';
+        $tabelpembelian .= '<tr>';
+        $tabelpembelian .= '<th class="right" colspan="5">TOTAL</th>';
+        $tabelpembelian .= '<th style="text-align: right">&nbsp;</th>';
+        $tabelpembelian .= '<th>&nbsp;</th>';
+        $tabelpembelian .= '</tr>';
+        $tabelpembelian .= '</tfoot>';
+		$tabelpembelian .= '</table>';
 		print $tabelpembelian;
 	}
 	exit();	

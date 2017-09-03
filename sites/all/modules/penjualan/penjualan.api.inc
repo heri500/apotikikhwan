@@ -796,8 +796,11 @@ function printProductBatchCode(){
     $tablePrint = '';
     $idPembelian = isset($_GET['idpembelian']) ? $_GET['idpembelian'] : null;
     if (!empty($idPembelian)){
+        if (isset($_GET['iddetail'])){
+            $idDetail = $_GET['iddetail'];
+        }
         $printPage = 0;
-        $result = db_query("SELECT barcode_batch, expired_date, jumlah,prod.namaproduct, prod.hargajual 
+        $result = db_query("SELECT iddetail, barcode_batch, expired_date, jumlah,prod.namaproduct, prod.hargajual 
         FROM detailpembelian beli LEFT JOIN product prod ON beli.idproduct=prod.idproduct
         WHERE idpembelian='%d'",$idPembelian);
         $barcodeData = array();
@@ -805,9 +808,12 @@ function printProductBatchCode(){
             $totalPrint = $data->jumlah;
             $barcode = $data->barcode_batch;
             $expired = $data->expired_date;
-            $namaProduct = substr(strtoupper($data->namaproduct),0,18);
+            $namaProduct = substr(strtoupper($data->namaproduct),0,15);
             $hargaJual = number_format($data->hargajual,0,',','.');
-            if (!empty($barcode) && $totalPrint > 0) {
+            if (!empty($barcode) && $totalPrint > 0 &&
+                ((isset($idDetail) && !empty($idDetail) && $data->iddetail == $idDetail)) ||
+                (!isset($idDetail) || empty($idDetail))
+            ) {
                 for ($j = 0;$j < $totalPrint;$j++) {
                     if ($printPage == 0) {
                         $tablePrint .= '<table style="width: 190px;border-collapse: collapse;margin-top:-2px;" >';
@@ -819,7 +825,7 @@ function printProductBatchCode(){
                     }
                     $tablePrint .= '<tr>';
                     $tablePrint .= '<td class="exp-cell" valign="bottom">';
-                    $tablePrint .= '<div class="exp-date">2018-10-01</div>';
+                    $tablePrint .= '<div class="exp-date">'.$expired.'</div>';
                     $tablePrint .= '</td>';
                     $tablePrint .= '<td>';
                     $tablePrint .= '<svg id="barcode-' . $barcode . '" class="barcode-place" align="center"></svg>';
@@ -865,8 +871,8 @@ function printLabelHarga(){
                 $tablePrint .= '<table style="width: 190px;border-collapse: collapse;" class="pagebreak">';
                 $tablePrint .= '<tbody>';
             }
-            $tablePrint .= '<tr><td colspan="2" style="font-size: 10px;font-weight: bold;padding-left: 4px;">' . strtoupper($dataProduct['info']->namaproduct) . '</td></tr>';
-            $tablePrint .= '<tr><td colspan="2" style="font-size: 30px;font-weight: bold;padding-left: 4px"><sup style="font-size: 10px;">Rp.</sup>' . number_format($dataProduct['info']->hargajual, 0, ',', '.') . '</td></tr>';
+            $tablePrint .= '<tr><td colspan="2" style="font-size: 11px;font-weight: bold;padding-left: 4px;">' . strtoupper($dataProduct['info']->namaproduct) . '</td></tr>';
+            $tablePrint .= '<tr><td colspan="2" style="font-size: 34px;font-weight: bold;padding-left: 4px"><sup style="font-size: 10px;">Rp.</sup>' . number_format($dataProduct['info']->hargajual, 0, ',', '.') . '</td></tr>';
             $tablePrint .= '<tr><td rowspan="2" style="width: 40px;"><img height="36" src="' . $pathLogo . '" /></td>';
             $tablePrint .= '<td><svg id="barcode-'.$dataProduct['info']->barcode.'" class="barcode"></svg></td>';
             $tablePrint .= '</tr>';

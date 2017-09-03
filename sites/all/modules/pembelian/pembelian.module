@@ -109,6 +109,33 @@ function pembelian_menu() {
 		'type' => MENU_CALLBACK,
 		'file' => 'globalpos.tabelreturn.inc'
 	);
+    $items['pembelian/updatedetailpembelian'] = array(
+        'title' => t('Update Detail Pembelian'),
+        'description' => 'Update detail pembelian',
+        'page callback' => 'update_detail_pembelian',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Pembelian Produk'),
+        'type' => MENU_CALLBACK,
+        'file' => 'pembelian.update.inc'
+    );
+    $items['pembelian/deletedetailpembelian'] = array(
+        'title' => t('Delete Detail Pembelian'),
+        'description' => 'Delete detail pembelian',
+        'page callback' => 'delete_detail_pembelian_ajax',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Pembelian Produk'),
+        'type' => MENU_CALLBACK,
+        'file' => 'pembelian.delete.inc'
+    );
+    $items['pembelian/simpandetailpembelian'] = array(
+        'title' => t('Insert Detail Pembelian'),
+        'description' => 'Insert detail pembelian',
+        'page callback' => 'insert_detail_pembelian',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Pembelian Produk'),
+        'type' => MENU_CALLBACK,
+        'file' => 'pembelian.update.inc'
+    );
 	return $items;
 } // end hook menu
 

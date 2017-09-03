@@ -34,3 +34,53 @@ function delete_pembelian($idpembelian){
 	}
 	header('Location: '.base_path().$_GET['destination']);
 }
+
+function delete_detail_pembelian($iddetail = null, $idPembelian = null){
+    $deleteStatus[] = array('message' => 'Penghapusan detail pembelian gagal...!!!');
+    if (!empty($iddetail) && !empty($idPembelian)){
+        $deleteStatus = array();
+        /* Update Stok Product */
+        $qtyBeli = db_result(db_query('SELECT jumlah FROM detailpembelian WHERE iddetail=%d', $iddetail));
+        $idproduct = db_result(db_query('SELECT idproduct FROM detailpembelian WHERE iddetail=%d', $iddetail));
+        $stokproduct = db_result(db_query('SELECT stok FROM product WHERE idproduct=%d',$idproduct));
+        $stoksekarang = $stockproduct + $qtyBeli;
+        if (!empty($idproduct)){
+            db_query("UPDATE product SET stok = stok + '%f', uploaded=0, changed=1 WHERE idproduct='%d'",$qtyBeli,$idproduct);
+            $keterangan = 'Revisi Pembelian - Hapus Detail Pembelian';
+            db_query("INSERT INTO transaksistock (idproduk, idpembelian, stocksebelum, keluar, stocksetelah, keterangan) VALUES
+				('%d', '%d', '%f', '%f', '%f', '%s')",$idproduct,$idPembelian,$stokproduct,$qtyBeli,$stoksekarang,$keterangan);
+        }
+        /* End Update Stok Product */
+        /* Delete Detail Pembelian */
+        $strSQL = 'DELETE FROM detailpembelian WHERE iddetail=%d';
+        db_query($strSQL,$iddetail);
+        /* End Delete Detail Pembelian */
+        /* Update Pembelian */
+        $strSQL = 'SELECT SUM(hargapokok*jumlah) AS total_modal FROM detailpembelian WHERE idpembelian=%d';
+        $totalModal = db_result(db_query($strSQL,$idPembelian));
+        $strSQL = 'UPDATE pembelian SET total=\'%f\' WHERE idpembelian=%d';
+        db_query($strSQL,$totalModal,$idPembelian);
+        /* End Update Pembelian */
+        /* Update Hutang Pembelian Jika Ada */
+        $caraBeli = db_result(db_query('SELECT carabayar FROM pembelian WHERE idpembelian=%d',$idPembelian));
+        $kembali = db_result(db_query('SELECT kembali FROM pembelian WHERE idpembelian=%d',$idPembelian));
+        $idSupplier = db_result(db_query('SELECT idsupplier FROM pembelian WHERE idpembelian=%d',$idPembelian));
+        $bayar = db_result(db_query('SELECT bayar FROM pembelian WHERE idpembelian=%d',$idPembelian));
+        if (!empty($idSupplier) && ($caraBeli == 'HUTANG' || $kembali < 0)){
+            $besarHutang = $totalModal - $bayar;
+            $sqlUpdatePiutang = 'UPDATE detailhutang SET besarhutang=\'%f\' ';
+            $sqlUpdatePiutang .= 'WHERE idsupplier=%d AND idpembelian=%d';
+            db_query($sqlUpdatePiutang, $besarHutang, $idSupplier, $idPembelian);
+            syncHutangSupplier($idSupplier);
+        }
+        /* End Update Hutang Pembelian Jika Ada */
+        $kembali = $bayar - $totalModal;
+        db_query('UPDATE pembelian SET kembali=\'%f\' WHERE idpembelian=%d',$kembali,$_POST['idpembelian']);
+        $deleteStatus[] = array('message' => 'Penghapusan detail pembelian berhasil...!!!');
+    }
+    return $deleteStatus;
+}
+function delete_detail_pembelian_ajax(){
+    print json_encode(delete_detail_pembelian($_POST['iddetail'],$_POST['idpembelian']));
+    exit();
+}

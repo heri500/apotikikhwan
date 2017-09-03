@@ -1,0 +1,1 @@
+ALTER TABLE `detailpembelian` ADD `iddetail` BIGINT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`iddetail`);

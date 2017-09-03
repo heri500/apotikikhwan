@@ -161,3 +161,11 @@ function getTotalPembayaranSupplier($idSupplier = null, $periode = null){
 	}
 	return $totalpembayaran;
 }
+function syncHutangSupplier($idSupplier = null){
+    if (!empty($idSupplier)){
+        $totalHutang = db_result(db_query("SELECT SUM(besarhutang) FROM detailhutang WHERE idsupplier=%d", $idSupplier));
+        $totalBayar = db_result(db_query("SELECT SUM(pembayaran) FROM pembayaranhutang WHERE idsupplier=%d", $idSupplier));
+        db_query("UPDATE hutang SET besarhutang='%f' WHERE idsupplier=%d", ($totalHutang - $totalBayar), $idSupplier);
+    }
+    return ($totalHutang - $totalBayar);
+}

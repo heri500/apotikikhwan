@@ -1038,9 +1038,13 @@ function pemasukan($request){
 }
 function serverSideGetProduct($request){
 	$items = array();
-	if ($_GET["term"]){
+	if (isset($_GET["term"])){
 		$KATACARI = '%'.$_GET["term"].'%';
-		$result = db_query("SELECT idproduct,barcode, alt_code, namaproduct, stok, hargajual,hargapokok,idkategori FROM product WHERE alt_code LIKE '%s' OR barcode LIKE '%s' OR UPPER(namaproduct) LIKE '%s' LIMIT 50",$KATACARI,$KATACARI,$KATACARI);
+		if (isset($_GET["idsupplier"])){
+            $result = db_query("SELECT idproduct,barcode, alt_code, namaproduct, stok, hargajual,hargapokok,idkategori FROM product WHERE (alt_code LIKE '%s' OR barcode LIKE '%s' OR UPPER(namaproduct) LIKE '%s') AND idsupplier='%d' LIMIT 50", $KATACARI, $KATACARI, $KATACARI,$_GET["idsupplier"]);
+        }else {
+            $result = db_query("SELECT idproduct,barcode, alt_code, namaproduct, stok, hargajual,hargapokok,idkategori FROM product WHERE alt_code LIKE '%s' OR barcode LIKE '%s' OR UPPER(namaproduct) LIKE '%s' LIMIT 50", $KATACARI, $KATACARI, $KATACARI);
+        }
 		$items = array();
 		while ($data = db_fetch_object($result)) {
 			$diskon = 0;
@@ -1961,7 +1965,7 @@ function serverSidePembelian($request){
     $output = array();
     while ($data = db_fetch_object($result)){
         $rowData = array();
-        $imgDetail = "<img title=\"Klik untuk melihat detail pembelian\" onclick=\"view_detail(".$data->idpembelian.",'".$data->nonota."');\" src=\"$baseDirectory/misc/media/images/forward_enabled.ico\" width=\"22\">";
+        $imgDetail = "<img title=\"Klik untuk melihat detail pembelian\" onclick=\"view_detail(".$data->idpembelian.",'".$data->nonota."',".$data->idsupplier.");\" src=\"$baseDirectory/misc/media/images/forward_enabled.ico\" width=\"22\">";
         $tombolhapus = "<img title=\"Klik untuk menghapus pembelian\" onclick=\"delete_pembelian(".$data->idpembelian.",'".$data->nonota."');\" src=\"$baseDirectory/misc/media/images/del.ico\" width=\"22\">";
         $rowData[] = $imgDetail;
         $rowData[] = $tombolhapus;
@@ -2009,6 +2013,101 @@ function serverSidePembelian($request){
         "sql"			  => $strSQL,
         "tglawal"		  => $tglAwal,
         "tglakhir"		  => $tglAkhir,
+    );
+}
+
+function serverSideDetailPembelian($request){
+    global $baseDirectory;
+    $pageStart = $_GET['start'];
+    if (isset($_GET['asal']) && $_GET['asal'] == 'pembelian'){
+        $pageLength = -1;
+    }else {
+        $pageLength = $_GET['length'];
+    }
+    $searchArray = $_REQUEST['search'];
+    $idPembelian = $_REQUEST['idpembelian'];
+    $searchQuery = $searchArray['value'];
+    $arrayColumn = array(
+        1 => 'product.barcode',
+        2 => 'product.namaproduct',
+        3 => 'detail.jumlah',
+        4 => 'detail.hargapokok',
+        5 => '(detail.jumlah*detail.hargapokok)',
+    );
+    $orderColumnArray = isset($_REQUEST['order']) && !empty($_REQUEST['order']) ? $_REQUEST['order'] : array( 0 => array('column' => 1, 'dir' => 'ASC'));
+    $orderColumn = $arrayColumn[$orderColumnArray[0]['column']].' '.$orderColumnArray[0]['dir'];
+    if (is_null($pageStart)){
+        $pageStart = 0;
+    }
+    if (is_null($pageLength)){
+        $pageLength = 25;
+    }
+
+    $firstRecord = $pageStart;
+    $lastRecord = $pageStart + $pageLength;
+    $strSQL = 'SELECT detail.iddetail,product.barcode, product.namaproduct, detail.jumlah,';
+    $strSQL .= 'detail.hargapokok,(detail.hargapokok*detail.jumlah) AS subtotal ';
+    $strSQL .= 'FROM detailpembelian detail LEFT JOIN product product ';
+    $strSQL .= 'ON detail.idproduct=product.idproduct ';
+    $strSQL .= 'LEFT JOIN supplier supp ON product.idsupplier=supp.idsupplier ';
+    $strSQL .= 'WHERE detail.idpembelian=%d ';
+    $strSQLFilteredTotal = 'SELECT COUNT(detail.iddetail) FROM ';
+    $strSQLFilteredTotal .= 'detailpembelian detail LEFT JOIN product product ';
+    $strSQLFilteredTotal .= 'ON detail.idproduct=product.idproduct ';
+    $strSQLFilteredTotal .= 'LEFT JOIN supplier supp ON product.idsupplier=supp.idsupplier ';
+    $strSQLFilteredTotal .= 'WHERE detail.idpembelian=%d ';
+    $strCriteria = "";
+    if (!empty($searchQuery)){
+        $strCriteria .= "AND (product.barcode LIKE '%%%s%%' OR ";
+        $strCriteria .= "product.namaproduct LIKE '%%%s%%'";
+        $strCriteria .= ")";
+    }
+    if ($pageLength == -1){
+        $strSQL .= $strCriteria . " ORDER BY $orderColumn";
+    }else {
+        $strSQL .= $strCriteria . " ORDER BY $orderColumn LIMIT %d, %d";
+    }
+    $strSQLFilteredTotal .= $strCriteria;
+    if (!empty($searchQuery)) {
+        if ($pageLength == -1){
+            $result = db_query($strSQL, $idPembelian, $searchQuery, $searchQuery);
+        }else {
+            $result = db_query($strSQL, $idPembelian, $searchQuery, $searchQuery, $firstRecord, $lastRecord);
+        }
+        $recordsFiltered = db_result(
+            db_query($strSQLFilteredTotal, $idPembelian, $searchQuery, $searchQuery)
+        );
+    }else{
+        if ($pageLength == -1) {
+            $result = db_query($strSQL, $idPembelian);
+        }else {
+            $result = db_query($strSQL, $idPembelian, $firstRecord, $lastRecord);
+        }
+        $recordsFiltered = db_result(db_query($strSQLFilteredTotal,$idPembelian));
+    }
+    $output = array();
+    while($data = db_fetch_object($result)){
+        $rowData = array();
+        $deletebutton = '<img title="Klik untuk menghapus detail pembelian" onclick="hapus_detail('.$data->iddetail.',\''.$data->namaproduct.'\');" src="'.$baseDirectory.'/misc/media/images/del.ico" width="22">';
+        $printbutton = '<img title="Klik untuk mencetak sticker batch detail pembelian" onclick="print_detail('.$idPembelian.','.$data->iddetail.',\''.$data->namaproduct.'\');" src="'.$baseDirectory.'/misc/media/images/print.png" width="22">';
+        $rowData[] = $deletebutton;
+        $rowData[] = $data->barcode;
+        $rowData[] = $data->namaproduct;
+        $rowData[] = $data->jumlah;
+        $rowData[] = number_format($data->hargapokok,0,',','.');
+        $rowData[] = number_format($data->subtotal,0,',','.');
+        $rowData[] = $printbutton;
+        $rowData[] = $data->iddetail;
+        $output[] = $rowData;
+    }
+    $recordsTotal = db_result(db_query("SELECT COUNT(iddetail) FROM detailpembelian"));
+    return array(
+        "draw"            => isset ( $request['draw'] ) ?
+            intval( $request['draw'] ) :
+            0,
+        "recordsTotal"    => intval( $recordsTotal ),
+        "recordsFiltered" => intval( $recordsFiltered ),
+        "data"            => $output
     );
 }
 
@@ -2105,6 +2204,8 @@ if ($_GET['request_data'] == 'pelanggan'){
     $returnArray = serverSideCheckLogin($_GET);
 }else if($_GET['request_data'] == 'pembelian'){
     $returnArray = serverSidePembelian($_GET);
+}else if($_GET['request_data'] == 'detailpembelian'){
+    $returnArray = serverSideDetailPembelian($_GET);
 }
 header('Access-Control-Allow-Origin: *');
 echo json_encode($returnArray);
