@@ -1980,7 +1980,7 @@ function serverSidePembelian($request){
         $rowData[] = number_format($data->kembali,0,",",".");
         $rowData[] = $data->namasupplier;
         $rowData[] = $data->name;
-        $tombolprint = "<img title=\"Klik untuk mencetak barcode\" onclick=\"print_barcode_pembelian(".$data->idpembelian.",'".$data->nonota."');\" src=\"$baseDirectory/misc/media/images/print.png\" width=\"22\">";
+        $tombolprint = "<img title=\"Klik untuk mencetak barcode\" onclick=\"print_pembelian(".$data->idpembelian.");\" src=\"$baseDirectory/misc/media/images/print.png\" width=\"22\">";
         $rowData[] = $tombolprint;
         $rowData[] = $data->idpembelian;
         $output[] = $rowData;
